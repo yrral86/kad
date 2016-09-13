@@ -2,24 +2,32 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkTextBuffer" id="janEditorBuffer">
+  <object class="GtkTextBuffer" id="jan_editor_buffer">
     <property name="text" translatable="yes">JAN Editor
 
 http://en.wikipedia.org/wiki/Artificial_Intelligence
 
 Computed Tags: deep learning, reasoning, logic</property>
   </object>
-  <object class="GtkWindow" id="mainWindow">
+  <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Knowledge Advantage Desktop</property>
+    <signal name="delete-event" handler="main_window_delete" swapped="no"/>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkTextView" id="janEditor">
+          <object class="GtkTextView" id="jan_editor">
+            <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="buffer">janEditorBuffer</property>
+            <property name="wrap_mode">word</property>
+            <property name="left_margin">10</property>
+            <property name="right_margin">10</property>
+            <property name="top_margin">10</property>
+            <property name="bottom_margin">10</property>
+            <property name="buffer">jan_editor_buffer</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -28,20 +36,23 @@ Computed Tags: deep learning, reasoning, logic</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="mainBox">
+          <object class="GtkBox" id="main_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkBox" id="headerBar">
+              <object class="GtkBox" id="header_bar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="saveButton">
-                    <property name="label" translatable="yes">button</property>
+                  <object class="GtkButton" id="save_button">
+                    <property name="label">gtk-save</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="use_stock">True</property>
+                    <property name="always_show_image">True</property>
+                    <signal name="clicked" handler="save_button_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -50,13 +61,14 @@ Computed Tags: deep learning, reasoning, logic</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="locationEntry">
+                  <object class="GtkEntry" id="location_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="input_purpose">url</property>
+                    <signal name="activate" handler="location_entry_activate" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
+                    <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -69,7 +81,7 @@ Computed Tags: deep learning, reasoning, logic</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="browserWindow">
+              <object class="GtkScrolledWindow" id="browser_window">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
@@ -85,13 +97,14 @@ Computed Tags: deep learning, reasoning, logic</property>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
         <child>
-          <object class="GtkViewport" id="visualizerViewportV">
+          <object class="GtkViewport" id="visualizer_viewport">
+            <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
