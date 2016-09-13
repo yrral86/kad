@@ -27,7 +27,7 @@ class KAD:
         self.browser_view.connect("load-changed", self.load_changed)
         browser_window.add(self.browser_view)
 
-        self.location_entry.set_text("http://www.google.com")
+        self.location_entry.set_text("http://en.wikipedia.org")
         self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
