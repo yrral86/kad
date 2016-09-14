@@ -19,7 +19,7 @@ Computed Tags: deep learning, reasoning, logic</property>
         <property name="can_focus">False</property>
         <child>
           <object class="GtkTextView" id="jan_editor">
-            <property name="width_request">200</property>
+            <property name="width_request">400</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="wrap_mode">word</property>
@@ -46,11 +46,10 @@ Computed Tags: deep learning, reasoning, logic</property>
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkButton" id="save_button">
-                    <property name="label">gtk-save</property>
+                    <property name="label">Make JAN</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_stock">True</property>
                     <property name="always_show_image">True</property>
                     <signal name="clicked" handler="save_button_clicked" swapped="no"/>
                   </object>
@@ -73,6 +72,21 @@ Computed Tags: deep learning, reasoning, logic</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkButton" id="visualize_button">
+                    <property name="label" translatable="yes">Visualize</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="always_show_image">True</property>
+                    <signal name="clicked" handler="visualize_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -81,10 +95,9 @@ Computed Tags: deep learning, reasoning, logic</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="browser_window">
+              <object class="GtkViewport" id="browser_window">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
+                <property name="can_focus">False</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -104,7 +117,7 @@ Computed Tags: deep learning, reasoning, logic</property>
         </child>
         <child>
           <object class="GtkViewport" id="visualizer_viewport">
-            <property name="width_request">200</property>
+            <property name="width_request">400</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
