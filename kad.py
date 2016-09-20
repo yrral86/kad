@@ -36,7 +36,7 @@ class KAD:
         self.browser_view.connect("load-changed", self.load_changed)
         browser_window.add(self.browser_view)
 
-        self.location_entry.set_text("http://en.wikipedia.org/wiki/AI")
+        self.location_entry.set_text("http://en.wikipedia.org/")
         self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
@@ -51,6 +51,7 @@ class KAD:
         self.editor_view.set_show_line_numbers(True)
         self.editor_view.set_highlight_current_line(True)
         self.editor_view.set_insert_spaces_instead_of_tabs(True)
+        self.editor_view.set_indent_width(4)
         self.editor_window = self.builder.get_object("editor_window")
         self.editor_window.add(self.editor_view)
         key, mod = Gtk.accelerator_parse("<Control>s")
@@ -77,8 +78,22 @@ class KAD:
         self.browser_view.load_uri(uri)
 
     def select_tab(self, tab):
-        if tab == "edit":
-                self.notebook.set_current_page(1)
+        if tab == "web":
+            index = 0
+        elif tab == "edit":
+            index = 1
+        else:
+            index = 2
+        self.notebook.set_current_page(index)
+
+    def get_tab(self):
+        page = self.notebook.get_current_page()
+        if page == 0:
+            return "web"
+        if page == 1:
+            return "edit"
+        if page == 2:
+            return "pdf"
 
     def save_file(self, *args):
         text = self.get_editor_text()
@@ -97,11 +112,11 @@ class KAD:
 
     def reload_kad(self, *args):
         self.ensure_saved()
-        os.execl("./kad.py", "./kad.py", "edit")
+        os.execl("./kad.py", "./kad.py", self.get_tab())
 
     def main(self, args):
         if len(args) > 1:
-                self.select_tab(args[1])
+            self.select_tab(args[1])
         Gtk.main()
 
     def main_window_delete(self, *args):
