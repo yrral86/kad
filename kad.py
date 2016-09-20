@@ -11,6 +11,8 @@ from gi.repository import GtkSource
 import datetime
 import getpass
 import json
+import os
+import sys
 import urllib
 
 class KAD:
@@ -34,7 +36,7 @@ class KAD:
         self.browser_view.connect("load-changed", self.load_changed)
         browser_window.add(self.browser_view)
 
-        self.location_entry.set_text("http://en.wikipedia.org")
+        self.location_entry.set_text("http://en.wikipedia.org/wiki/AI")
         self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
@@ -42,8 +44,8 @@ class KAD:
         self.editor_buffer = GtkSource.Buffer.new_with_language(lm.get_language("python"))
         self.filename = "kad.py"
         with open(self.filename, 'r') as f:
-            data = f.read()
-            self.editor_buffer.set_text(data)
+            self.file_data = f.read()
+            self.editor_buffer.set_text(self.file_data)
         self.editor_view = GtkSource.View.new_with_buffer(self.editor_buffer)
         self.editor_view.set_auto_indent(True)
         self.editor_view.set_show_line_numbers(True)
@@ -53,6 +55,10 @@ class KAD:
         self.editor_window.add(self.editor_view)
         key, mod = Gtk.accelerator_parse("<Control>s")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.save_file)
+        self.notebook = self.builder.get_object("notebook")
+
+        key, mod = Gtk.accelerator_parse("<Control>r")
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.reload_kad)
 
         self.jan_editor = self.builder.get_object("jan_editor")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
@@ -70,14 +76,32 @@ class KAD:
     def load(self, uri):
         self.browser_view.load_uri(uri)
 
+    def select_tab(self, tab):
+        if tab == "edit":
+                self.notebook.set_current_page(1)
+
     def save_file(self, *args):
-        start_iter = self.editor_tbuffer.get_start_iter()
-        end_iter = self.editor_buffer.get_end_iter()
-        text = self.textbuffer.get_text(start_iter, end_iter, True)
+        text = self.get_editor_text()
         with open(self.filename, 'w') as f:
             f.write(text)
+        self.file_data = text
 
-    def main(self):
+    def ensure_saved(self):
+        if self.get_editor_text() != self.file_data:
+                self.save_file()
+
+    def get_editor_text(self):
+        start_iter = self.editor_buffer.get_start_iter()
+        end_iter = self.editor_buffer.get_end_iter()
+        return self.editor_buffer.get_text(start_iter, end_iter, True)
+
+    def reload_kad(self, *args):
+        self.ensure_saved()
+        os.execl("./kad.py", "./kad.py", "edit")
+
+    def main(self, args):
+        if len(args) > 1:
+                self.select_tab(args[1])
         Gtk.main()
 
     def main_window_delete(self, *args):
@@ -133,4 +157,4 @@ class KAD:
 
 
 kad = KAD()
-kad.main()
+kad.main(sys.argv)
