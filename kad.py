@@ -14,7 +14,7 @@ import urllib
 class KAD:
     def __init__(self):
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("shell.glade")
+        self.builder.add_from_file("ui.glade")
         self.builder.connect_signals(self)
 
         window = self.builder.get_object("main_window")
