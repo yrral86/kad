@@ -5,6 +5,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('WebKit2', '4.0')
 from gi.repository import WebKit2
+gi.require_version('GtkSource', '3.0')
+from gi.repository import GtkSource
 
 import datetime
 import getpass
@@ -36,6 +38,22 @@ class KAD:
         self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
+        lm = GtkSource.LanguageManager()
+        self.editor_buffer = GtkSource.Buffer.new_with_language(lm.get_language("python"))
+        self.filename = "kad.py"
+        with open(self.filename, 'r') as f:
+            data = f.read()
+            self.editor_buffer.set_text(data)
+        self.editor_view = GtkSource.View.new_with_buffer(self.editor_buffer)
+        self.editor_view.set_auto_indent(True)
+        self.editor_view.set_show_line_numbers(True)
+        self.editor_view.set_highlight_current_line(True)
+        self.editor_view.set_insert_spaces_instead_of_tabs(True)
+        self.editor_window = self.builder.get_object("editor_window")
+        self.editor_window.add(self.editor_view)
+        key, mod = Gtk.accelerator_parse("<Control>s")
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.save_file)
+
         self.jan_editor = self.builder.get_object("jan_editor")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
         self.visualizer_viewport = self.builder.get_object("visualizer_viewport")
@@ -51,6 +69,13 @@ class KAD:
 
     def load(self, uri):
         self.browser_view.load_uri(uri)
+
+    def save_file(self, *args):
+        start_iter = self.editor_tbuffer.get_start_iter()
+        end_iter = self.editor_buffer.get_end_iter()
+        text = self.textbuffer.get_text(start_iter, end_iter, True)
+        with open(self.filename, 'w') as f:
+            f.write(text)
 
     def main(self):
         Gtk.main()
