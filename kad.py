@@ -87,7 +87,6 @@ class KAD:
 
         self.visualizer_view = WebKit2.WebView()
         self.visualizer_viewport.add(self.visualizer_view)
-        self.visualizer_view.get_settings().set_property("enable-developer-extras",True)
 
         window.fullscreen()
         window.show_all()
@@ -178,20 +177,19 @@ class KAD:
             self.jan_editor.show()
 
     def visualize_button_clicked(self, *args):
-        tab = self.get_tab()
-        filepath = ""
-        if tab == "edit":
-            filepath = self.file_uri_from_relative_path(self.filename)
-        elif tab == "pdf":
-            filepath = self.pdf_document.get_uri()
-
-        if filepath != "":
-            dirpath = os.path.dirname(filepath)
-            self.visualizer_view.load_uri(dirpath)
-
         if self.visualizer_viewport.is_visible():
             self.visualizer_viewport.hide()
         else:
+            tab = self.get_tab()
+            filepath = ""
+            if tab == "edit":
+                filepath = self.file_uri_from_relative_path(self.filename)
+            elif tab == "pdf":
+                filepath = self.pdf_document.get_uri()
+
+            if filepath != "":
+                dirpath = os.path.dirname(filepath)
+            self.visualizer_view.load_uri(dirpath)
             self.visualizer_viewport.show()
 
     def location_entry_activate(self, *args):
