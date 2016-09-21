@@ -24,6 +24,8 @@ class TextStats:
         total = 0
         for word in self.dictionary:
             total += self.dictionary[word]
-        print total, " total words"
+        print "Raw text: ", self.raw_text
+        print "Cleaned text: ", self.text
+        print "Total words: ", total
         top = sorted(self.dictionary, key=self.dictionary.get, reverse=True)
         print "Top 4 words: ", top[:4]

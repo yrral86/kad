@@ -124,7 +124,7 @@ class KAD:
         with open(self.filename, 'w') as f:
             f.write(text)
         self.file_data = text
-        ts = TextStats("This is a test of the TextStats\n class. \tTextStats is\na\tspecial \nclass\t for\n\n calculating statistics about a block of text.  TextStats\t will strip out any characters that are not alphabetic or whitespace and then convert all words to lowercase.  Perhaps in the future, it will also remove stop words like a, an, the, and, or, etc.  Another thing to investigate is having it try phrases rather than single words.")
+        ts = TextStats("This is a test of the TextStats\n class. \tTextStats is\na\tspecial \nclass\t for\n\n calculat8^$ing statistics about a block of text.  TextStats\t will strip out an93638&^%39\\y c/4/44298754haracters that are not alphabetic or whitespace and then convert all words to lowercase.  Perhaps in the future, it will also remove stop words like a, an, the, and, or, etc.  Another thing to investigate is having it try phrases rather than single words.")
         ts.print_summary()
 
     def ensure_saved(self):
