@@ -1,5 +1,7 @@
 import re
 
+STOP_WORDS = ["a", "about", "all", "also", "an", "and", "any", "are", "etc", "for", "in", "is", "isnt", "it", "its", "not", "of", "or", "the", "than", "that", "then", "this", "to", "will"]
+
 class TextStats:
     def __init__(self, text):
         self.raw_text = text
@@ -10,7 +12,13 @@ class TextStats:
         # remove characters that are not alphabetic or whitespace
         stripped = re.sub("[^a-z\s]", "", self.raw_text.lower())
         # replace all whitespace with a single space
-        self.text = re.sub("\s+", " ", stripped)
+        cleaned = re.sub("\s+", " ", stripped)
+        # remove stop words
+        words = []
+        for word in cleaned.split():
+            if word not in STOP_WORDS:
+                words.append(word)
+        self.text = " ".join(words)
 
     def build_dictionary(self):
         self.dictionary = {}
