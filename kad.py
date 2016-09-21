@@ -16,6 +16,7 @@ import datetime
 import getpass
 import json
 import os
+import re
 import sys
 import urllib
 
@@ -36,6 +37,7 @@ class KAD:
         self.location_entry.add_accelerator("grab-focus", accelerators, key, mod, Gtk.AccelFlags.VISIBLE)
         key, mod = Gtk.accelerator_parse("<Control>q")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.main_window_delete)
+        self.notebook = self.builder.get_object("notebook")
 
         # gtkwebkit
         browser_window = self.builder.get_object("browser_window")
@@ -50,10 +52,8 @@ class KAD:
         # gtksourceview
         lm = GtkSource.LanguageManager()
         self.editor_buffer = GtkSource.Buffer.new_with_language(lm.get_language("python"))
-        self.filename = "kad.py"
-        with open(self.filename, 'r') as f:
-            self.file_data = f.read()
-            self.editor_buffer.set_text(self.file_data)
+        self.filename = ""
+        self.load_file("kad.py")
         self.editor_view = GtkSource.View.new_with_buffer(self.editor_buffer)
         self.editor_view.set_auto_indent(True)
         self.editor_view.set_show_line_numbers(True)
@@ -64,7 +64,6 @@ class KAD:
         self.editor_window.add(self.editor_view)
         key, mod = Gtk.accelerator_parse("<Control>s")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.save_file)
-        self.notebook = self.builder.get_object("notebook")
 
         # save and reload KAD with Control-R
         key, mod = Gtk.accelerator_parse("<Control>r")
@@ -97,6 +96,15 @@ class KAD:
     def file_uri_from_relative_path(self, path):
         return "file://" + os.path.abspath(path)
 
+    def load_file(self, filename):
+        filename = re.sub("file://", "", filename)
+        if self.filename != "":
+            self.ensure_saved()
+        self.filename = filename
+        with open(self.filename, 'r') as f:
+            self.file_data = f.read()
+            self.editor_buffer.set_text(self.file_data)
+
     def load(self, uri):
         self.browser_view.load_uri(uri)
 
@@ -111,6 +119,9 @@ class KAD:
 
     def get_tab(self):
         page = self.notebook.get_current_page()
+        return self.get_tab_from_page(page)
+
+    def get_tab_from_page(self, page):
         if page == 0:
             return "web"
         if page == 1:
@@ -189,22 +200,42 @@ class KAD:
 
             if filepath != "":
                 dirpath = os.path.dirname(filepath)
-            self.visualizer_view.load_uri(dirpath)
+                self.visualizer_view.load_uri(dirpath)
             self.visualizer_viewport.show()
 
     def location_entry_activate(self, *args):
         uri = self.location_entry.get_text()
-        if not("http" in uri):
-            uri = "http://" + uri
-        self.load(uri)
+        if "file://" in uri:
+            if ".pdf" in uri:
+                self.pdf_document = EvinceDocument.Document.factory_get_document(uri)
+                self.pdf_model.set_document(self.pdf_document)
+                self.select_tab("pdf")
+            else:
+                self.load_file(uri)
+                self.select_tab("edit")
+        else:
+            if not("http" in uri):
+                uri = "http://" + uri
+            self.load(uri)
+            self.select_tab("web")
 
     def load_changed(self, *args):
-        if args[1] == WebKit2.LoadEvent.FINISHED:
+        if args[1] == WebKit2.LoadEvent.FINISHED and self.get_tab() == "web":
             uri = self.browser_view.get_uri()
             visualization_uri = "http://www.infocaptor.com/bubble-my-page?url=" + \
                                 urllib.quote_plus(uri) + "&size=400"
             self.location_entry.set_text(uri)
             self.visualizer_view.load_uri(visualization_uri)
+
+    def notebook_page_changed(self, notebook, page, page_num, *args):
+        tab = self.get_tab_from_page(page_num)
+        if tab == "web":
+            location = self.browser_view.get_uri()
+        elif tab == "edit":
+            location = self.file_uri_from_relative_path(self.filename)
+        else:
+            location = self.pdf_document.get_uri()
+        self.location_entry.set_text(location)
 
 
 kad = KAD()

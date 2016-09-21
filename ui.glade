@@ -103,6 +103,7 @@ Computed Tags: deep learning, reasoning, logic</property>
                   <object class="GtkNotebook" id="notebook">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <signal name="switch-page" handler="notebook_page_changed" swapped="no"/>
                     <child>
                       <object class="GtkViewport" id="browser_window">
                         <property name="visible">True</property>
