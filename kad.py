@@ -69,13 +69,13 @@ class KAD:
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.reload_kad)
 
         # pdf viewer (Evince)
-        path = "file://" + os.path.abspath("pdf/deep_learning.pdf")
+        path = self.file_uri_from_relative_path("pdf/deep_learning.pdf")
         EvinceDocument.init()
-        doc = EvinceDocument.Document.factory_get_document(path)
+        self.pdf_document = EvinceDocument.Document.factory_get_document(path)
         self.pdf_view = EvinceView.View()
-        model = EvinceView.DocumentModel()
-        model.set_document(doc)
-        self.pdf_view.set_model(model)
+        self.pdf_model = EvinceView.DocumentModel()
+        self.pdf_model.set_document(self.pdf_document)
+        self.pdf_view.set_model(self.pdf_model)
         self.pdf_window = self.builder.get_object("pdf_window")
         self.pdf_window.add(self.pdf_view)
 
@@ -85,12 +85,16 @@ class KAD:
 
         self.visualizer_view = WebKit2.WebView()
         self.visualizer_viewport.add(self.visualizer_view)
+        self.visualizer_view.get_settings().set_property("enable-developer-extras",True)
 
         window.fullscreen()
         window.show_all()
 
         self.jan_editor.hide()
         self.visualizer_viewport.hide()
+
+    def file_uri_from_relative_path(self, path):
+        return "file://" + os.path.abspath(path)
 
     def load(self, uri):
         self.browser_view.load_uri(uri)
@@ -170,6 +174,17 @@ class KAD:
             self.jan_editor.show()
 
     def visualize_button_clicked(self, *args):
+        tab = self.get_tab()
+        filepath = ""
+        if tab == "edit":
+            filepath = self.file_uri_from_relative_path(self.filename)
+        elif tab == "pdf":
+            filepath = self.pdf_document.get_uri()
+
+        if filepath != "":
+            dirpath = os.path.dirname(filepath)
+            self.visualizer_view.load_uri(dirpath)
+
         if self.visualizer_viewport.is_visible():
             self.visualizer_viewport.hide()
         else:
