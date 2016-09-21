@@ -7,6 +7,10 @@ gi.require_version('WebKit2', '4.0')
 from gi.repository import WebKit2
 gi.require_version('GtkSource', '3.0')
 from gi.repository import GtkSource
+gi.require_version('EvinceDocument', '3.0')
+from gi.repository import EvinceDocument
+gi.require_version('EvinceView', '3.0')
+from gi.repository import EvinceView
 
 import datetime
 import getpass
@@ -29,8 +33,9 @@ class KAD:
         key, mod = Gtk.accelerator_parse("<Control>l")
         self.location_entry.add_accelerator("grab-focus", accelerators, key, mod, Gtk.AccelFlags.VISIBLE)
         key, mod = Gtk.accelerator_parse("<Control>q")
-        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, Gtk.main_quit)
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.main_window_delete)
 
+        # gtkwebkit
         browser_window = self.builder.get_object("browser_window")
         self.browser_view = WebKit2.WebView()
         self.browser_view.connect("load-changed", self.load_changed)
@@ -40,6 +45,7 @@ class KAD:
         self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
+        # gtksourceview
         lm = GtkSource.LanguageManager()
         self.editor_buffer = GtkSource.Buffer.new_with_language(lm.get_language("python"))
         self.filename = "kad.py"
@@ -58,8 +64,20 @@ class KAD:
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.save_file)
         self.notebook = self.builder.get_object("notebook")
 
+        # save and reload KAD with Control-R
         key, mod = Gtk.accelerator_parse("<Control>r")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.reload_kad)
+
+        # pdf viewer (Evince)
+        path = "file://" + os.path.abspath("pdf/deep_learning.pdf")
+        EvinceDocument.init()
+        doc = EvinceDocument.Document.factory_get_document(path)
+        self.pdf_view = EvinceView.View()
+        model = EvinceView.DocumentModel()
+        model.set_document(doc)
+        self.pdf_view.set_model(model)
+        self.pdf_window = self.builder.get_object("pdf_window")
+        self.pdf_window.add(self.pdf_view)
 
         self.jan_editor = self.builder.get_object("jan_editor")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
@@ -103,7 +121,7 @@ class KAD:
 
     def ensure_saved(self):
         if self.get_editor_text() != self.file_data:
-                self.save_file()
+            self.save_file()
 
     def get_editor_text(self):
         start_iter = self.editor_buffer.get_start_iter()
@@ -120,6 +138,7 @@ class KAD:
         Gtk.main()
 
     def main_window_delete(self, *args):
+        self.ensure_saved()
         Gtk.main_quit(*args)
 
     def save_button_clicked(self, *args):
