@@ -9,8 +9,10 @@ class TextStats:
         self.build_dictionary()
 
     def clean_text(self):
+        # replace -\n with empty to concatenate line breaks
+        concatenated = re.sub("-\n", "", self.raw_text.lower())
         # remove characters that are not alphabetic or whitespace
-        stripped = re.sub("[^a-z\s]", "", self.raw_text.lower())
+        stripped = re.sub("[^a-z\s]", "", concatenated)
         # replace all whitespace with a single space
         cleaned = re.sub("\s+", " ", stripped)
         # remove stop words
