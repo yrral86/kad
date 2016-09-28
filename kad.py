@@ -51,8 +51,7 @@ class KAD:
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
 
         # gtksourceview
-        lm = GtkSource.LanguageManager()
-        self.editor_buffer = GtkSource.Buffer.new_with_language(lm.get_language("python"))
+        self.editor_buffer = GtkSource.Buffer()
         self.filename = ""
         self.load_file("kad.py")
         self.editor_view = GtkSource.View.new_with_buffer(self.editor_buffer)
@@ -97,6 +96,11 @@ class KAD:
         self.jan_editor.hide()
         self.visualizer_viewport.hide()
 
+    def set_language_from_filename(self, filename):
+        lm = GtkSource.LanguageManager()
+        language = lm.guess_language(filename)
+        self.editor_buffer.set_language(language)
+
     def file_uri_from_relative_path(self, path):
         return "file://" + os.path.abspath(path)
 
@@ -110,6 +114,7 @@ class KAD:
                 self.file_data = f.read()
         except IOError:
             self.file_data = ""
+        self.set_language_from_filename(self.filename)
         self.editor_buffer.set_text(self.file_data)
 
     def load(self, uri):
