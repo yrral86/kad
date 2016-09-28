@@ -90,7 +90,7 @@ class KAD:
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
         self.visualizer_view.get_context().register_uri_scheme("python", self.visualizer_request, None, None)
 
-        window.fullscreen()
+        window.maximize()
         window.show_all()
 
         self.jan_editor.hide()
