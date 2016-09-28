@@ -1,0 +1,23 @@
+<html>
+    <head>
+      <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      <script>
+        function call_python(method, param) {
+            $.get("python:" + method + "(" + JSON.stringify(param) + ")")
+        }
+
+        function trigger() {
+            call_python("trigger_update", "author")
+        }
+
+        function update(text) {
+            console.log(text)
+            document.querySelector("#fromPython").innerHTML = JSON.stringify(text)
+        }
+      </script>
+    </head>
+    <body>
+      <div id="fromPython">initial load, waiting for python to call update()</div>
+      <input onclick="trigger();" type="button" value="update"></input>
+    </body>
+</html>

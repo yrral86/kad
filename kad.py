@@ -85,7 +85,10 @@ class KAD:
         self.visualizer_viewport = self.builder.get_object("visualizer_viewport")
 
         self.visualizer_view = WebKit2.WebView()
+        self.visualizer_view.get_settings().set_enable_developer_extras(True)
         self.visualizer_viewport.add(self.visualizer_view)
+        self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
+        self.visualizer_view.get_context().register_uri_scheme("python", self.visualizer_request, None, None)
 
         window.fullscreen()
         window.show_all()
@@ -101,9 +104,12 @@ class KAD:
         if self.filename != "":
             self.ensure_saved()
         self.filename = filename
-        with open(self.filename, 'r') as f:
-            self.file_data = f.read()
-            self.editor_buffer.set_text(self.file_data)
+        try:
+            with open(self.filename, 'r') as f:
+                self.file_data = f.read()
+        except IOError:
+            self.file_data = ""
+        self.editor_buffer.set_text(self.file_data)
 
     def load(self, uri):
         self.browser_view.load_uri(uri)
@@ -134,8 +140,6 @@ class KAD:
         with open(self.filename, 'w') as f:
             f.write(text)
         self.file_data = text
-        ts = TextStats("This is a test of the TextStats\n class. \tTextStats is\na\tspecial \nclass\t for-\nmula\n\n calculat8^$ing statistics about a block of text.  TextStats\t will strip out an93638&^%39\\y c/4/44298754haracters that are not alphabetic or whitespace and then convert all words to lowercase.  Perhaps in the future, it will also remove stop words like a, an, the, and, or, etc.  Another thing to investigate is having it try phrases rather than single words.")
-        ts.print_summary()
 
     def ensure_saved(self):
         if self.get_editor_text() != self.file_data:
@@ -154,6 +158,15 @@ class KAD:
         if len(args) > 1:
             self.select_tab(args[1])
         Gtk.main()
+
+    def visualizer_request(self, request, *args):
+        value = eval("self." + request.get_path())
+
+    def trigger_update(self, thing):
+       self.js_function("update", {'test': "stuff", 'things': ['one', 2, {'name': "iii"}], "from_js": thing})
+
+    def js_function(self, function, param):
+        self.visualizer_view.run_javascript(function + "(" + json.dumps(param) + ")", None, None)
 
     def main_window_delete(self, *args):
         self.ensure_saved()
@@ -199,8 +212,7 @@ class KAD:
                 filepath = self.pdf_document.get_uri()
 
             if filepath != "":
-                dirpath = os.path.dirname(filepath)
-                self.visualizer_view.load_uri(dirpath)
+                self.visualizer_view.load_uri(self.file_uri_from_relative_path("visualize.html"))
             self.visualizer_viewport.show()
 
     def location_entry_activate(self, *args):
