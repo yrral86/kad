@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import urllib
+import uuid
 
 from text_stats import TextStats
 
@@ -176,18 +177,20 @@ class KAD:
         if self.jan_editor.is_visible():
             self.jan_editor.hide()
         else:
-            uri = self.browser_view.get_uri()
-            title = self.browser_view.get_title()
+            # write JAN based on current location
+            # TODO: detect existing, networked JAN and display it instead
+            uri = self.location_entry.get_text()
+            tab = self.get_tab()
+            type = "url"
+            if tab != "web":
+                type = re.sub("[^.]*\.(.*)", "\g<1>", uri)
             time = str(datetime.datetime.now())
             user = getpass.getuser()
             jan = {
-                'type': 'url',
+                'type': type,
                 'link': uri,
+                'uuid': str(uuid.uuid5(uuid.NAMESPACE_URL, uri)),
                 'metadata': [
-                    {
-                        'name': "page title",
-                        'value': title
-                    },
                     {
                         'name': 'retrieval time',
                         'value': time
@@ -197,8 +200,18 @@ class KAD:
                         'value': user
                     }
                 ]}
-            self.jan_editor_buffer.set_text(json.dumps(jan, sort_keys=False, indent=4))
+            if tab == "web":
+                jan["metadata"].append({
+                        'name': "page title",
+                        'value': self.browser_view.get_title()
+                    })
+            self.jan_editor_buffer.set_text(json.dumps(jan, indent=4))
             self.jan_editor.show()
+            self.add_jan(jan)
+
+    def add_jan(self, jan):
+        with open("new_jan/" + jan["uuid"] + ".jan", 'w') as f:
+            f.write(json.dumps(jan))
 
     def visualize_button_clicked(self, *args):
         if self.visualizer_viewport.is_visible():
