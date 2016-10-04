@@ -21,10 +21,14 @@ import sys
 import urllib
 import uuid
 
-from text_stats import TextStats
+from markup import MarkUpHandler
+from dir_watcher import DirWatcher
 
 class KAD:
     def __init__(self):
+        self.new_watcher = DirWatcher("new_jan", MarkUpHandler)
+        self.new_watcher.start()
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui.glade")
         self.builder.connect_signals(self)
@@ -176,6 +180,7 @@ class KAD:
 
     def main_window_delete(self, *args):
         self.ensure_saved()
+        self.new_watcher.stop = True
         Gtk.main_quit(*args)
 
     def save_button_clicked(self, *args):

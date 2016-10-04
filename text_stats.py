@@ -1,10 +1,21 @@
 import re
 
-STOP_WORDS = ["a", "about", "all", "also", "an", "and", "any", "are", "etc", "for", "in", "is", "isnt", "it", "its", "not", "of", "or", "the", "than", "that", "then", "this", "to", "will"]
+STOP_WORDS = {
+    'english': ["a", "about", "all", "also", "an", "and",
+                "any", "are", "as",
+                "by", "etc", "for", "from", "had",
+                "have", "has", "in", "is", "isnt",
+                "it", "its", "not", "of", "on", "or",
+                "than", "that", "the", "they",
+                "their", "then", "this", "to", "which",
+                "will", "with"],
+    'python':  ["class", "def", "for", "if", "in", "not", "self"]
+    }
 
 class TextStats:
-    def __init__(self, text):
+    def __init__(self, text, lang):
         self.raw_text = text
+        self.language = lang
         self.clean_text()
         self.build_dictionary()
 
@@ -18,7 +29,7 @@ class TextStats:
         # remove stop words
         words = []
         for word in cleaned.split():
-            if word not in STOP_WORDS:
+            if word not in STOP_WORDS[self.language]:
                 words.append(word)
         self.text = " ".join(words)
 
@@ -34,8 +45,8 @@ class TextStats:
         total = 0
         for word in self.dictionary:
             total += self.dictionary[word]
-        print "Raw text: ", self.raw_text
-        print "Cleaned text: ", self.text
+        #print "Raw text: ", self.raw_text
+        #print "Cleaned text: ", self.text
         print "Total words: ", total
         top = sorted(self.dictionary, key=self.dictionary.get, reverse=True)
-        print "Top 4 words: ", top[:4]
+        print "Top 10 words: ", top[:10]
