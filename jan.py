@@ -36,6 +36,6 @@ class JAN:
         return json.dumps(self.map, indent=indent)
 
 
-if len(sys.argv) == 2:
+if len(sys.argv) == 2 and "jan.py" in sys.argv[0]:
     with open(sys.argv[1]) as file:
         print JAN.new_from_json(file.read()).to_pretty_json(2)

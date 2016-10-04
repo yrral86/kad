@@ -11,26 +11,27 @@ class MarkUpHandler:
         json_string = slurp(path)
         jan = JAN.new_from_json(json_string)
         type = jan.type
-        link = jan.link
+        uri = jan.link
+        lang = ""
         if type == "py":
-            filename = re.sub("file://", "", link)
+            filename = re.sub("file://", "", uri)
             text = slurp(filename)
             text = re.sub("[.()\[\]_]", " ", text)
-            print link
-            ts = TextStats(text, 'python')
-            ts.print_summary()
+            lang = 'python'
         elif type == "url":
-            text = dump_url(link)
-            print link
-            ts = TextStats(text, 'english')
-            ts.print_summary()
-            top_ten = ts.top_words(10)
-            for word in top_ten:
-                jan.add_metadata("keyword", word)
-            promote_jan(jan)
+            text = dump_url(uri)
+            for link in dump_links(uri):
+                jan.add_metadata("link", link)
+            lang = 'english'
         else:
             print "type not yet supported:", type
-            print link
+            print uri
+        if lang != "":
+            ts = TextStats(text, lang)
+            top_twenty = ts.top_words(20)
+            for word in top_twenty:
+                jan.add_metadata("keyword", word)
+            promote_jan(jan)
 
 def slurp(path):
     text = ""
@@ -40,6 +41,15 @@ def slurp(path):
 
 def dump_url(url):
     return os.popen("lynx -dump -nolist " + url).read()
+
+def dump_links(url):
+    string = os.popen("lynx -dump -listonly " +url).read()
+    links = {}
+    lines = string.split("\n")
+    for line in lines:
+        if re.match(".*http.*", line):
+            links[re.sub(".*(http.*)", "\g<1>", line)] = None
+    return links.keys()
 
 def promote_jan(jan):
     os.remove("new_jan/" + jan.uuid + ".jan")
