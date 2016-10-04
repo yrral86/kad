@@ -9,7 +9,8 @@ class DirWatcher(threading.Thread):
         self.responder = responder
         self.stop = False
         super(DirWatcher, self).__init__()
-        
+        self.daemon = True
+
     def run(self):
         path = os.path.abspath(self.directory)
         while not(self.stop):

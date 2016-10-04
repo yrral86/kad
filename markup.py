@@ -12,7 +12,7 @@ class MarkUpHandler:
         jan = JAN.new_from_json(json_string)
         type = jan.type
         uri = jan.link
-        lang = ""
+        lang = None
         if type == "py":
             filename = re.sub("file://", "", uri)
             text = slurp(filename)
@@ -26,7 +26,7 @@ class MarkUpHandler:
         else:
             print "type not yet supported:", type
             print uri
-        if lang != "":
+        if lang != None:
             ts = TextStats(text, lang)
             top_twenty = ts.top_words(20)
             for word in top_twenty:
@@ -52,6 +52,6 @@ def dump_links(url):
     return links.keys()
 
 def promote_jan(jan):
-    os.remove("new_jan/" + jan.uuid + ".jan")
     with open("marked_up_jan/" + jan.uuid + ".jan", "w") as file:
         file.write(jan.to_json())
+    os.remove("new_jan/" + jan.uuid + ".jan")
