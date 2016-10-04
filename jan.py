@@ -2,12 +2,24 @@
 
 import json
 import sys
+import uuid
 
 class JAN:
     @staticmethod
     def new_from_json(json_string):
         jan = JAN()
         jan.map = json.loads(json_string)
+        return jan
+
+    @staticmethod
+    def new_from_uri_and_type(uri, type):
+        jan = JAN()
+        jan.map = {
+                'type': type,
+                'link': uri,
+                'uuid': str(uuid.uuid5(uuid.NAMESPACE_URL, uri)),
+                'metadata': []
+                }
         return jan
 
     def __getattr__(self, name):

@@ -20,7 +20,13 @@ class KAD:
         self.ui = UI(self, "ui.glade")
         self.ui.prepare()
 
-        signal.signal(signal.SIGINT, self.ui.main_window_delete)
+        # magic to make control-c work
+        # http://stackoverflow.com/questions/16410852/keyboard-interrupt-with-with-python-gtk
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    def add_jan(self, jan):
+        with open("new_jan/" + jan.uuid + ".jan", 'w') as f:
+            f.write(jan.to_json())
 
     def current_uri(self):
         return self.file_uri_from_relative_path(self.filename)
@@ -66,6 +72,8 @@ class KAD:
     def shutdown(self):
         self.ensure_saved()
         self.new_watcher.stop = True
+
+    # javascript bridge functions
 
     def visualizer_request(self, request, *args):
         eval("self." + request.get_path())

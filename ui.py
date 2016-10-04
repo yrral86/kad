@@ -17,6 +17,8 @@ import re
 import urllib
 import uuid
 
+from jan import JAN
+
 class UI:
     def __init__ (self, kad, file):
         self.kad= kad
@@ -128,7 +130,6 @@ class UI:
     # begin signal handlers
 
     def main_window_delete(self, *args):
-        self.window.hide()
         self.kad.shutdown()
         Gtk.main_quit(*args)
 
@@ -145,32 +146,14 @@ class UI:
                 type = re.sub("[^.]*\.(.*)", "\g<1>", uri)
             time = str(datetime.datetime.now())
             user = getpass.getuser()
-            jan = {
-                'type': type,
-                'link': uri,
-                'uuid': str(uuid.uuid5(uuid.NAMESPACE_URL, uri)),
-                'metadata': [
-                    {
-                        'name': 'retrieval time',
-                        'value': time
-                    },
-                    {
-                        'name': 'originating user',
-                        'value': user
-                    }
-                ]}
+            jan = JAN.new_from_uri_and_type(uri, type)
+            jan.add_metadata('retrieval time', time)
+            jan.add_metadata('originating user', user)
             if tab == "web":
-                jan["metadata"].append({
-                        'name': "page title",
-                        'value': self.browser_view.get_title()
-                    })
-            self.jan_editor_buffer.set_text(json.dumps(jan, indent=4))
+                jan.add_metadata('page title', self.browser_view.get_title())
+            self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
             self.jan_editor.show()
-            self.add_jan(jan)
-
-    def add_jan(self, jan):
-        with open("new_jan/" + jan["uuid"] + ".jan", 'w') as f:
-            f.write(json.dumps(jan))
+            self.kad.add_jan(jan)
 
     def visualize_button_clicked(self, *args):
         if self.visualizer_viewport.is_visible():

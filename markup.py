@@ -55,3 +55,4 @@ def promote_jan(jan):
     with open("marked_up_jan/" + jan.uuid + ".jan", "w") as file:
         file.write(jan.to_json())
     os.remove("new_jan/" + jan.uuid + ".jan")
+    print "promoted jan " + jan.uuid + " with link: " + jan.link
