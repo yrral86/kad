@@ -41,6 +41,10 @@ class TextStats:
             else:
                 self.dictionary[word] += 1
 
+    def top_words(self, limit):
+        top = sorted(self.dictionary, key=self.dictionary.get, reverse=True)
+        return top[:limit]
+
     def print_summary(self):
         total = 0
         for word in self.dictionary:

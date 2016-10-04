@@ -17,4 +17,7 @@ class DirWatcher(threading.Thread):
             for file in files:
                 if self.responder != None:
                     self.responder.new_file(file)
-            time.sleep(10)
+            # sleep for 10 seconds, checking if stopped frequently
+            for i in range(100):
+                if not(self.stop):
+                    time.sleep(0.1)

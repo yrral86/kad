@@ -33,11 +33,11 @@ class KAD:
         self.builder.add_from_file("ui.glade")
         self.builder.connect_signals(self)
 
-        window = self.builder.get_object("main_window")
+        self.window = self.builder.get_object("main_window")
         self.location_entry = self.builder.get_object("location_entry")
 
         accelerators = Gtk.AccelGroup()
-        window.add_accel_group(accelerators)
+        self.window.add_accel_group(accelerators)
         key, mod = Gtk.accelerator_parse("<Control>l")
         self.location_entry.add_accelerator("grab-focus", accelerators, key, mod, Gtk.AccelFlags.VISIBLE)
         key, mod = Gtk.accelerator_parse("<Control>q")
@@ -94,8 +94,8 @@ class KAD:
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
         self.visualizer_view.get_context().register_uri_scheme("python", self.visualizer_request, None, None)
 
-        window.maximize()
-        window.show_all()
+        self.window.maximize()
+        self.window.show_all()
 
         self.jan_editor.hide()
         self.visualizer_viewport.hide()
@@ -170,7 +170,7 @@ class KAD:
         Gtk.main()
 
     def visualizer_request(self, request, *args):
-        value = eval("self." + request.get_path())
+        eval("self." + request.get_path())
 
     def trigger_update(self, thing):
        self.js_function("update", {'test': "stuff", 'things': ['one', 2, {'name': "iii"}], "from_js": thing})
@@ -179,6 +179,7 @@ class KAD:
         self.visualizer_view.run_javascript(function + "(" + json.dumps(param) + ")", None, None)
 
     def main_window_delete(self, *args):
+        self.window.hide()
         self.ensure_saved()
         self.new_watcher.stop = True
         Gtk.main_quit(*args)
