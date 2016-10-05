@@ -7,12 +7,13 @@ import sys
 
 from dir_watcher import DirWatcher
 from file_utils import F
+from jan import JAN
 from markup import MarkUpHandler
 from ui import UI
 
 class KAD:
     def __init__(self):
-        self.new_watcher = DirWatcher("new_jan", MarkUpHandler)
+        self.new_watcher = DirWatcher(JAN.NewDir, MarkUpHandler)
         self.new_watcher.start()
 
         self.filename = ""
@@ -25,13 +26,13 @@ class KAD:
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     def add_jan(self, jan):
-        F.dump("new_jan/" + jan.uuid + ".jan", jan.to_json())
+        F.dump(jan.new_path(), jan.to_json())
 
     def current_uri(self):
-        return F.file_uri_from_relative_path(self.filename)
+        return F.uri_from_path(self.filename)
 
     def load_file(self, filename):
-        filename = F.filename_from_fule_uri(filename)
+        filename = F.path_from_uri(filename)
         if self.filename != "":
             self.ensure_saved()
         self.filename = filename

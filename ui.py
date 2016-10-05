@@ -12,11 +12,10 @@ from gi.repository import EvinceView
 
 import datetime
 import getpass
-import json
 import re
 import urllib
-import uuid
 
+from file_utils import F
 from jan import JAN
 
 class UI:
@@ -101,7 +100,7 @@ class UI:
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.kad.reload_kad)
 
         # pdf viewer (Evince)
-        path = self.kad.file_uri_from_relative_path("pdf/deep_learning.pdf")
+        path = F.uri_from_path("pdf/deep_learning.pdf")
         EvinceDocument.init()
         self.pdf_document = EvinceDocument.Document.factory_get_document(path)
         self.pdf_view = EvinceView.View()
@@ -111,7 +110,7 @@ class UI:
         self.pdf_window = self.builder.get_object("pdf_window")
         self.pdf_window.add(self.pdf_view)
 
-        self.jan_editor = self.builder.get_object("jan_editor")
+        self.jan_scroll_window = self.builder.get_object("jan_scroll_window")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
         self.visualizer_viewport = self.builder.get_object("visualizer_viewport")
 
@@ -124,7 +123,7 @@ class UI:
         self.window.maximize()
         self.window.show_all()
 
-        self.jan_editor.hide()
+        self.jan_scroll_window.hide()
         self.visualizer_viewport.hide()
 
     # begin signal handlers
@@ -134,26 +133,28 @@ class UI:
         Gtk.main_quit(*args)
 
     def save_button_clicked(self, *args):
-        if self.jan_editor.is_visible():
-            self.jan_editor.hide()
+        if self.jan_scroll_window.is_visible():
+            self.jan_scroll_window.hide()
         else:
             # write JAN based on current location
             # TODO: detect existing, networked JAN and display it instead
             uri = self.location_entry.get_text()
-            tab = self.get_tab()
-            type = "url"
-            if tab != "web":
-                type = re.sub("[^.]*\.(.*)", "\g<1>", uri)
-            time = str(datetime.datetime.now())
-            user = getpass.getuser()
-            jan = JAN.new_from_uri_and_type(uri, type)
-            jan.add_metadata('retrieval time', time)
-            jan.add_metadata('originating user', user)
-            if tab == "web":
-                jan.add_metadata('page title', self.browser_view.get_title())
+            jan = JAN.find_from_uri(uri)
+            if jan == None:
+                tab = self.get_tab()
+                type = "url"
+                if tab != "web":
+                    type = re.sub("[^.]*\.(.*)", "\g<1>", uri)
+                time = str(datetime.datetime.now())
+                user = getpass.getuser()
+                jan = JAN.new_from_uri_and_type(uri, type)
+                jan.add_metadata('retrieval time', time)
+                jan.add_metadata('originating user', user)
+                if tab == "web":
+                    jan.add_metadata('page title', self.browser_view.get_title())
+                self.kad.add_jan(jan)
             self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
-            self.jan_editor.show()
-            self.kad.add_jan(jan)
+            self.jan_scroll_window.show()
 
     def visualize_button_clicked(self, *args):
         if self.visualizer_viewport.is_visible():
@@ -167,7 +168,7 @@ class UI:
                 filepath = self.pdf_document.get_uri()
 
             if filepath != "":
-                self.visualizer_view.load_uri(self.kad.file_uri_from_relative_path("visualize.html"))
+                self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
             self.visualizer_viewport.show()
 
     def location_entry_activate(self, *args):

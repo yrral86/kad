@@ -30,7 +30,7 @@ class MarkUpHandler:
             top_twenty = ts.top_words(20)
             for word in top_twenty:
                 jan.add_metadata("keyword", word)
-            promote_jan(jan)
+            jan.promote_new_to_marked_up()
 
 def dump_url(url):
     return os.popen("lynx -dump -nolist " + url).read()
@@ -43,8 +43,3 @@ def dump_links(url):
         if re.match(".*http.*", line):
             links[re.sub(".*(http.*)", "\g<1>", line)] = None
     return links.keys()
-
-def promote_jan(jan):
-    F.dump("marked_up_jan/" + jan.uuid + ".jan", jan.to_json())
-    os.remove("new_jan/" + jan.uuid + ".jan")
-    print "promoted jan " + jan.uuid + " with link: " + jan.link
