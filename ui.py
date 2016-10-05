@@ -136,11 +136,11 @@ class UI:
         if self.jan_scroll_window.is_visible():
             self.jan_scroll_window.hide()
         else:
-            # write JAN based on current location
-            # TODO: detect existing, networked JAN and display it instead
             uri = self.location_entry.get_text()
+            # detect existing JAN
             jan = JAN.find_from_uri(uri)
             if jan == None:
+                # JAN not found, write a new JAN
                 tab = self.get_tab()
                 type = "url"
                 if tab != "web":

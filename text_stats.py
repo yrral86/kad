@@ -52,5 +52,4 @@ class TextStats:
         #print "Raw text: ", self.raw_text
         #print "Cleaned text: ", self.text
         print "Total words: ", total
-        top = sorted(self.dictionary, key=self.dictionary.get, reverse=True)
-        print "Top 10 words: ", top[:10]
+        print "Top 10 words: ", self.top_words(10)
