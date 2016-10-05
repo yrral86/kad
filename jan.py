@@ -4,6 +4,8 @@ import json
 import sys
 import uuid
 
+from file_utils import F
+
 class JAN:
     @staticmethod
     def new_from_json(json_string):
@@ -49,5 +51,4 @@ class JAN:
 
 
 if len(sys.argv) == 2 and "jan.py" in sys.argv[0]:
-    with open(sys.argv[1]) as file:
-        print JAN.new_from_json(file.read()).to_pretty_json(2)
+    print JAN.new_from_json(F.slurp(sys.argv[1])).to_pretty_json(2)

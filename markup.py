@@ -1,21 +1,20 @@
-import json
 import os
 import re
 
-from text_stats import TextStats
+from file_utils import F
 from jan import JAN
+from text_stats import TextStats
 
 class MarkUpHandler:
     @staticmethod
     def new_file(path):
-        json_string = slurp(path)
+        json_string = F.slurp(path)
         jan = JAN.new_from_json(json_string)
         type = jan.type
         uri = jan.link
         lang = None
         if type == "py":
-            filename = re.sub("file://", "", uri)
-            text = slurp(filename)
+            text = F.slurp(uri)
             text = re.sub("[.()\[\]_]", " ", text)
             lang = 'python'
         elif type == "url":
@@ -33,12 +32,6 @@ class MarkUpHandler:
                 jan.add_metadata("keyword", word)
             promote_jan(jan)
 
-def slurp(path):
-    text = ""
-    with open(path) as file:
-        text = file.read()
-    return text
-
 def dump_url(url):
     return os.popen("lynx -dump -nolist " + url).read()
 
@@ -52,7 +45,6 @@ def dump_links(url):
     return links.keys()
 
 def promote_jan(jan):
-    with open("marked_up_jan/" + jan.uuid + ".jan", "w") as file:
-        file.write(jan.to_json())
+    F.dump("marked_up_jan/" + jan.uuid + ".jan", jan.to_json())
     os.remove("new_jan/" + jan.uuid + ".jan")
     print "promoted jan " + jan.uuid + " with link: " + jan.link
