@@ -20,7 +20,16 @@ sudo apt-get upgrade
 5. Install a few additional dependencies
 
    ```
-sudo apt-get install libevince lynx
+sudo apt-get install libevince lynx python-networkx
    ```
 
 Now, you should be ready to run KAD.  Execute kad.py to get started.
+
+## Keyboard Shortcuts
+
+KAD has a few built-in keyboard shortcuts that will help you use it.
+
+* Control-Q: Quit KAD
+* Control-L: Focus the location bar
+* Control-S: Save the file currently being edited
+* Control-R: Reload KAD (useful if you have edited the KAD source code)
