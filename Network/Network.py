@@ -4,6 +4,7 @@ import time
 import json
 import glob
 import os
+import traceback
 """
 Every unique field type in the json has a category master node, stored as Category:field
 Each unique entry is referred to as either and Id unless its a Keyword
@@ -18,6 +19,7 @@ class network (threading.Thread):
     janCategoryList = []
     janIDs = []
     startFlag = False
+    janMetaList = []
 
     def __init__(self):
         super(network, self).__init__()
@@ -25,36 +27,43 @@ class network (threading.Thread):
     def stopLoading(self):
         self.loadingFlag = False
 
-    def loadJAN(self, JAN):
-        self.janDict[JAN[0]["uuid"]] = JAN
-        self.janGraph.add_node(JAN[0]["uuid"])
+    def loadJAN(self, janjson):
+        self.janDict[janjson["uuid"]] = janjson
+        self.janGraph.add_node(janjson["uuid"])
 
-        for line in JAN:
-            for x in line:
-                if x not in self.janCategoryList:
-                    self.janCategoryList.append(x)
-                    self.janGraph.add_node("Category:" + x)
-                if x not in self.janIDs:
-                    self.janIDs.append(x)
-                    self.janGraph.add_node("Id:" + JAN[0][x])
-                if x != "keywords":
-                    self.janGraph.add_edge("Id:" + JAN[0][x], "Category:" + x)
-                    self.janGraph.add_edge(JAN[0]["uuid"],"Id:" + JAN[0][x])
-                else:
-                    keywords = JAN[0]["keywords"].replace('[','').replace(']','').split(",")
-                    for x in keywords:
-                        if x not in self.janKeywordList:
-                            self.janKeywordList.append(x)
-                            self.janGraph.add_node("Key:" + x)
-                            self.janGraph.add_edge("Key:" + x, "Category:keywords")
-                        self.janGraph.add_edge(JAN[0]["uuid"],"Key:"+ x)
-
-    def getJANsFromKeyword(self, keyword):
+        for field in janjson.keys():
+            if field not in self.janCategoryList:
+                self.janCategoryList.append(field)
+                self.janGraph.add_node("Category:" + field)
+            if janjson[field] not in self.janIDs and not isinstance(janjson[field],list):
+                self.janIDs.append(janjson[field])
+                self.janGraph.add_node("Id:" + janjson[field])
+            if  not isinstance(janjson[field],list):
+                self.janGraph.add_edge("Id:" + janjson[field], "Category:" + field)
+                self.janGraph.add_edge(janjson["uuid"],"Id:" + janjson[field])
+            else:
+                for dictList in janjson[field]:
+                    for meta in dictList.keys(): #name value name value
+                        if dictList["name"] not in self.janMetaList:
+                            self.janMetaList.append(dictList[meta])
+                            self.janGraph.add_node("MetaField:" + dictList[meta])
+                            self.janGraph.add_edge("MetaField:" + dictList[meta], "Category:" + field)
+                        if dictList["value"] not in self.janKeywordList:
+                            self.janKeywordList.append(dictList["value"])
+                            self.janGraph.add_node("Meta:" + dictList["value"])
+                            self.janGraph.add_edge("Meta:" + dictList["value"],"MetaField:" + dictList[meta])
+                        
+                        self.janGraph.add_edge(janjson["uuid"], "Meta:" + dictList["value"])
+                        
+                
+    def getJansFromKeyword(self, keyword):
         try:
-            neighborlist = netx.all_neighbors(self.janGraph, "Key:"+keyword)
+            neighborlist = netx.all_neighbors(self.janGraph, "Meta:"+keyword)
+            
             jsonlist = list()
             for neigh in neighborlist:
-                if not neigh.startswith("Category:"):
+                #print(neigh)
+                if not neigh.startswith("MetaField:"):
                     jsonlist.append(self.janDict[neigh])
             return jsonlist
         except netx.NetworkXError:
@@ -62,6 +71,24 @@ class network (threading.Thread):
 
     def getCategories(self):
         return self.janCategoryList
+
+    def getKeywords(self):
+        return self.janKeywordList
+        
+    def getKeywordCategories(self):
+        return self.janMetaList
+        
+    def getKeywordsFromKeywordCategory(self,metafield):
+        try:
+            neighborlist = netx.all_neighbors(self.janGraph, "MetaField:"+ metafield)
+            jsonlist = list()
+            for neigh in neighborlist:
+                if not neigh.startswith("Category:"):
+                    jsonlist.append(neigh)
+            return jsonlist
+        except netx.NetworkXError:
+            return ""
+        return
 
     def getJansFromId(self,id):
         try:
@@ -102,23 +129,31 @@ class network (threading.Thread):
     def begin(self):
         self.start()
         while not self.startFlag:
-            pass
+            time.sleep(1);
 
     def run(self):
         #This thread looks for a directory jsons under the location of this script and pulls json files from it
         #it runs until stopLoading() is called
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.dirname(os.path.abspath(__file__));
         loadedFileList = list()
         while self.loadingFlag:
             print("searching for jsons")
-            files = glob.glob(path + "\\jsons\\*.json")
+            files = glob.glob(path + "/new_jan/*.jan")
+            #print(files)
             for eachfile in files:
                 if eachfile not in loadedFileList:
-                    print(eachfile)
+                    #print(eachfile)
                     with open(eachfile) as handle:
                         for eachJan in handle:
-                            self.loadJAN(json.loads(eachJan))
-                        handle.close()
+                            #print(eachJan)
+                            try:
+                                janjson = json.loads(eachJan)
+                                #print(janjson["uuid"])
+                                self.loadJAN(janjson)
+                            except:
+                                print("error loading jan")
+                                traceback.print_exc()
+                        handle.close();
                     loadedFileList.append(eachfile)
             self.startFlag = True
             time.sleep(10)

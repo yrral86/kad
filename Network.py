@@ -151,7 +151,7 @@ class network (threading.Thread):
                                 #print(janjson["uuid"])
                                 self.loadJAN(janjson)
                             except:
-                                print("boom")
+                                print("error loading jan")
                                 traceback.print_exc()
                         handle.close();
                     loadedFileList.append(eachfile)
