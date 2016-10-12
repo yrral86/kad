@@ -174,9 +174,9 @@ class UI:
             uri = F.uri_from_path("pdf/" + new_filename + ".pdf")
             F.mv(old_uri, uri)
             self.open_uri(uri)
-            # save_button_clicked with None will create the JAN
-            # without opening the JAN viewer
-            self.save_button_clicked(None)
+            # create the JAN
+            jan = JAN.new_from_uri_and_type(uri, None)
+            jan.add_new()
 
     def main_window_delete(self, *args):
         self.kad.shutdown()
