@@ -1,4 +1,5 @@
 import gi
+from gi.repository import GLib
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('WebKit2', '4.0')
@@ -60,6 +61,11 @@ class UI:
         start_iter = self.editor_buffer.get_start_iter()
         end_iter = self.editor_buffer.get_end_iter()
         return self.editor_buffer.get_text(start_iter, end_iter, True)
+
+    def get_jan_editor_text(self):
+        start_iter = self.jan_editor_buffer.get_start_iter()
+        end_iter = self.jan_editor_buffer.get_end_iter()
+        return self.jan_editor_buffer.get_text(start_iter, end_iter, True)
 
     def prepare(self):
         self.window = self.builder.get_object("main_window")
@@ -157,7 +163,8 @@ class UI:
         Gtk.main_quit(*args)
 
     def save_button_clicked(self, show, *args):
-        if self.jan_scroll_window.is_visible():
+        if show != None and self.jan_scroll_window.is_visible():
+            self.jan_reloading = False
             self.jan_scroll_window.hide()
         else:
             uri = self.location_entry.get_text()
@@ -179,7 +186,19 @@ class UI:
                 self.kad.add_jan(jan)
             self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
             if show != None:
+                self.jan_reloading = True
+                self.jan_reloader = GLib.timeout_add_seconds(1, self.reload_jan)
                 self.jan_scroll_window.show()
+
+    def reload_jan(self):
+        uri = self.location_entry.get_text();
+        jan = JAN.find_from_uri(uri)
+        if jan != None:
+            new_json = jan.to_pretty_json(4)
+            old_json = self.get_jan_editor_text()
+            if new_json != old_json:
+                self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
+        return self.jan_reloading
 
     def visualize_button_clicked(self, *args):
         if self.visualizer_viewport.is_visible():
