@@ -26,6 +26,10 @@ class JAN:
         jan = JAN()
         if janType == None:
             janType = re.sub("[^.]*\.(.*)", "\g<1>", uri)
+        # map mbox to email in case someone opens an mbox file
+        # outside of the syncing process
+        if janType == "mbox":
+            janType = "email"
         jan.map = {
                 'type': janType,
                 'link': uri,
