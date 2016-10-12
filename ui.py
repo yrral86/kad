@@ -12,8 +12,10 @@ from gi.repository import EvinceView
 
 import datetime
 import getpass
+import hashlib
 import re
 import urllib
+import uuid
 
 from file_utils import F
 from jan import JAN
@@ -75,6 +77,8 @@ class UI:
         browser_window = self.builder.get_object("browser_window")
         self.browser_view = WebKit2.WebView()
         self.browser_view.connect("load-changed", self.load_changed)
+        self.browser_view.connect("decide-policy", self.decide_policy)
+        self.browser_view.get_context().connect("download-started", self.download_started)
         browser_window.add(self.browser_view)
 
         self.location_entry.set_text("http://en.wikipedia.org/")
@@ -128,11 +132,34 @@ class UI:
 
     # begin signal handlers
 
+    def decide_policy(self, view, decision, type):
+        uri = decision.get_request().get_uri()
+        if re.match(".*\.pdf$", uri, re.IGNORECASE):
+            decision.download()
+
+    def download_started(self, context, download):
+        uri = F.uri_from_path("pdf/" + str(uuid.uuid4()) + ".pdf")
+        download.set_destination(uri)
+        download.connect("finished", self.download_finished)
+
+    def download_finished(self, download):
+        status = download.get_response().get_status_code()
+        if status == 200:
+            uri = download.get_destination()
+            contents = F.slurp(uri)
+            new_filename = hashlib.sha256(contents).hexdigest()
+            old_uri = uri
+            uri = F.uri_from_path("pdf/" + new_filename + ".pdf")
+            F.mv(old_uri, uri)
+            self.location_entry.set_text(uri)
+            self.location_entry_activate()
+            self.save_button_clicked(None)
+
     def main_window_delete(self, *args):
         self.kad.shutdown()
         Gtk.main_quit(*args)
 
-    def save_button_clicked(self, *args):
+    def save_button_clicked(self, show, *args):
         if self.jan_scroll_window.is_visible():
             self.jan_scroll_window.hide()
         else:
@@ -154,7 +181,8 @@ class UI:
                     jan.add_metadata('page title', self.browser_view.get_title())
                 self.kad.add_jan(jan)
             self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
-            self.jan_scroll_window.show()
+            if show != None:
+                self.jan_scroll_window.show()
 
     def visualize_button_clicked(self, *args):
         if self.visualizer_viewport.is_visible():
