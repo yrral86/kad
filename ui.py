@@ -137,7 +137,7 @@ class UI:
         self.visualizer_viewport.hide()
 
     def open_uri(self, uri):
-        if not("http" in uri):
+        if not("http" in uri) and not("file:///" in uri):
             uri = F.uri_from_path(uri)
         self.location_entry.set_text(uri)
         self.location_entry_activate()
@@ -160,6 +160,7 @@ class UI:
             decision.download()
 
     def download_started(self, context, download):
+        # download to random file
         uri = F.uri_from_path("pdf/" + str(uuid.uuid4()) + ".pdf")
         download.set_destination(uri)
         download.connect("finished", self.download_finished)
@@ -168,12 +169,15 @@ class UI:
         status = download.get_response().get_status_code()
         if status == 200:
             uri = download.get_destination()
+            # rename file based on contents to avoid duplicate PDFs
             contents = F.slurp(uri)
             new_filename = hashlib.sha256(contents).hexdigest()
             old_uri = uri
             uri = F.uri_from_path("pdf/" + new_filename + ".pdf")
             F.mv(old_uri, uri)
             self.open_uri(uri)
+            # save_button_clicked with None will create the JAN
+            # without opening the JAN viewer
             self.save_button_clicked(None)
 
     def main_window_delete(self, *args):

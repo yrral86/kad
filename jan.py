@@ -35,7 +35,7 @@ class JAN:
         jan.map = {'uuid': JAN.uuid_from_uri(uri)}
         for filename in [jan.networked_path(), jan.marked_up_path(),
                          jan.new_path()]:
-             if os.path.isfile(filename):
+             if F.file_exists(filename):
                  jan = JAN.new_from_json(F.slurp(filename))
                  return jan
         return None
