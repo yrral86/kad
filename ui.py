@@ -104,12 +104,9 @@ class UI:
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.kad.reload_kad)
 
         # pdf viewer (Evince)
-        path = F.uri_from_path("pdf/deep_learning.pdf")
         EvinceDocument.init()
-        self.pdf_document = EvinceDocument.Document.factory_get_document(path)
         self.pdf_view = EvinceView.View()
         self.pdf_model = EvinceView.DocumentModel()
-        self.pdf_model.set_document(self.pdf_document)
         self.pdf_view.set_model(self.pdf_model)
         self.pdf_window = self.builder.get_object("pdf_window")
         self.pdf_window.add(self.pdf_view)

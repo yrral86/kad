@@ -22,6 +22,9 @@ class MarkUpHandler:
             for link in dump_links(uri):
                 jan.add_metadata("link", link)
             lang = 'english'
+        elif type == "pdf":
+            text = dump_pdf(uri)
+            lang = 'english'
         else:
             print "type not yet supported:", type
             print uri
@@ -43,3 +46,7 @@ def dump_links(url):
         if re.match(".*http.*", line):
             links[re.sub(".*(http.*)", "\g<1>", line)] = None
     return links.keys()
+
+def dump_pdf(uri):
+    path = F.path_from_uri(uri)
+    return os.popen("pdftotext " + path + " -").read()
