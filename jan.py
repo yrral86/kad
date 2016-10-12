@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+import datetime
+import getpass
 import json
 import os
+import re
 import sys
 import uuid
 
@@ -19,14 +22,20 @@ class JAN:
         return jan
 
     @staticmethod
-    def new_from_uri_and_type(uri, type):
+    def new_from_uri_and_type(uri, janType):
         jan = JAN()
+        if janType == None:
+            janType = re.sub("[^.]*\.(.*)", "\g<1>", uri)
         jan.map = {
-                'type': type,
+                'type': janType,
                 'link': uri,
                 'uuid': JAN.uuid_from_uri(uri),
                 'metadata': []
                 }
+        time = str(datetime.datetime.now())
+        user = getpass.getuser()
+        jan.add_metadata('retrieval time', time)
+        jan.add_metadata('originating user', user)
         return jan
 
     @staticmethod
@@ -43,6 +52,9 @@ class JAN:
     @staticmethod
     def uuid_from_uri(uri):
         return str(uuid.uuid5(uuid.NAMESPACE_URL, uri))
+
+    def add_new(self):
+        F.dump(self.new_path(), self.to_json())
 
     def promote_new_to_marked_up(self):
         F.dump(self.marked_up_path(), self.to_json())

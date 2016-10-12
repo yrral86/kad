@@ -11,8 +11,6 @@ from gi.repository import EvinceDocument
 gi.require_version('EvinceView', '3.0')
 from gi.repository import EvinceView
 
-import datetime
-import getpass
 import hashlib
 import re
 import urllib
@@ -195,17 +193,13 @@ class UI:
             if jan == None:
                 # JAN not found, write a new JAN
                 tab = self.get_tab()
-                type = "url"
-                if tab != "web":
-                    type = re.sub("[^.]*\.(.*)", "\g<1>", uri)
-                time = str(datetime.datetime.now())
-                user = getpass.getuser()
-                jan = JAN.new_from_uri_and_type(uri, type)
-                jan.add_metadata('retrieval time', time)
-                jan.add_metadata('originating user', user)
+                janType = None
+                if tab == "web":
+                    janType = "url"
+                jan = JAN.new_from_uri_and_type(uri, janType)
                 if tab == "web":
                     jan.add_metadata('page title', self.browser_view.get_title())
-                self.kad.add_jan(jan)
+                jan.add_new()
             self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
             if show != None:
                 self.jan_reloading = True

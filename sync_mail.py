@@ -1,61 +1,42 @@
 import poplib
+import string
+import threading
+import time
 
 from file_utils import F
+from jan import JAN
 
-class SyncMail
+MAILBOX_DIR = "mailbox"
+
+class SyncMail(threading.Thread):
     def __init__(self, server, user, password):
-        self.server = server
-        self.user = user
-        self.password = password
-        self.pop3 = poplib.POP3_SSL(self.server)
+        self.pop3 = poplib.POP3_SSL(server)
+        self.pop3.user(user)
+        self.pop3.pass_(password)
+        self.stop = False
+        super(SyncMail, self).__init__()
+        self.daemon = True
 
-    def get_items(self)
+    def get_ids(self):
         resp, items, octets = self.pop3.list()
-        return items
-        
+        return map(lambda x : string.split(x)[0], items)
+
+    def filename_from_id(self, id):
+        return MAILBOX_DIR + "/" + id + ".mbox"
+
     def sync(self):
-        items = self.get_items()
-        for item in items:
-            
+        ids = self.get_ids()
+        for message_id in ids:
+            filename = self.filename_from_id(message_id)
+            if not(F.file_exists(filename)):
+                resp, text, octets = self.pop3.retr(message_id)
+                text = string.join(text, "\n")
+                F.dump(filename, text)
+                uri = F.uri_from_path(filename)
+                jan = JAN.new_from_uri_and_type(uri, "email")
+                jan.add_new()
 
-SERVER = "pop.gmail.com"
-USER  = "houshifu1234@gmail.com"
-PASSWORD = "hsf12345"
-
-
-# connect to server
-logging.debug('connecting to ' + SERVER)
-server = poplib.POP3_SSL(SERVER)
-#server = poplib.POP3(SERVER)
-
-# login
-logging.debug('logging in')
-server.user(USER)
-server.pass_(PASSWORD)
-
-# list items on server
-logging.debug('listing emails')
-resp, items, octets = server.list()
-ret = server.stat()
-print "ret:\n"
-print ret
-print "resp:\n"
-print resp
-print "items:\n"
-print items
-print "octets:\n"
-print octets
-# download the first message in the list
-if False:
-    for i in range(0, ret[0]):
-        id, size = string.split(items[i])
-        resp, text, octets = server.retr(id)
-
-        # convert list to Message object
-        text = string.join(text, "\n")
-        file = StringIO.StringIO(text)
-        message = rfc822.Message(file)
-
-        # output message
-        print text
-        print "\n\n"
+    def run(self):
+        while not(self.stop):
+            self.sync()
+            time.sleep(60)
