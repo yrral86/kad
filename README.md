@@ -33,3 +33,4 @@ KAD has a few built-in keyboard shortcuts that will help you use it.
 * Control-L: Focus the location bar
 * Control-S: Save the file currently being edited
 * Control-R: Reload KAD (useful if you have edited the KAD source code)
+* Control-O: Open a file
