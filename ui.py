@@ -182,8 +182,8 @@ class UI:
         self.kad.shutdown()
         Gtk.main_quit(*args)
 
-    def save_button_clicked(self, show, *args):
-        if show != None and self.jan_scroll_window.is_visible():
+    def save_button_clicked(self, *args):
+        if self.jan_scroll_window.is_visible():
             self.jan_reloading = False
             self.jan_scroll_window.hide()
         else:
@@ -201,10 +201,9 @@ class UI:
                     jan.add_metadata('page title', self.browser_view.get_title())
                 jan.add_new()
             self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
-            if show != None:
-                self.jan_reloading = True
-                self.jan_reloader = GLib.timeout_add_seconds(1, self.reload_jan)
-                self.jan_scroll_window.show()
+            self.jan_reloading = True
+            self.jan_reloader = GLib.timeout_add_seconds(1, self.reload_jan)
+            self.jan_scroll_window.show()
 
     def reload_jan(self):
         uri = self.location_entry.get_text();
