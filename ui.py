@@ -86,10 +86,9 @@ class UI:
         self.browser_view.connect("decide-policy", self.decide_policy)
         self.browser_view.get_context().connect("download-started", self.download_started)
         browser_window.add(self.browser_view)
-
-        self.location_entry.set_text("http://en.wikipedia.org/")
-        self.location_entry_activate()
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
+
+        self.open_uri("http://scholar.google.com/")
 
         # gtksourceview
         self.editor_buffer = GtkSource.Buffer()
@@ -127,13 +126,33 @@ class UI:
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
         self.visualizer_view.get_context().register_uri_scheme("python", self.kad.visualizer_request, None, None)
 
+        # file open dialog
+        key, mod = Gtk.accelerator_parse("<Control>o")
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.spawn_file_chooser)
+
         self.window.maximize()
         self.window.show_all()
 
         self.jan_scroll_window.hide()
         self.visualizer_viewport.hide()
 
+    def open_uri(self, uri):
+        if not("http" in uri):
+            uri = F.uri_from_path(uri)
+        self.location_entry.set_text(uri)
+        self.location_entry_activate()
+
     # begin signal handlers
+
+    def spawn_file_chooser(self, *args):
+        file_chooser = Gtk.FileChooserDialog("Open file", self.window,
+                                             Gtk.FileChooserAction.OPEN,
+                                             (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                              Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        response = file_chooser.run()
+        if response == Gtk.ResponseType.OK:
+            self.open_uri(file_chooser.get_filename())
+        file_chooser.destroy()
 
     def decide_policy(self, view, decision, type):
         uri = decision.get_request().get_uri()
@@ -154,8 +173,7 @@ class UI:
             old_uri = uri
             uri = F.uri_from_path("pdf/" + new_filename + ".pdf")
             F.mv(old_uri, uri)
-            self.location_entry.set_text(uri)
-            self.location_entry_activate()
+            self.open_uri(uri)
             self.save_button_clicked(None)
 
     def main_window_delete(self, *args):
