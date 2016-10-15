@@ -138,7 +138,7 @@ class network (threading.Thread):
         loadedFileList = list()
         while self.loadingFlag:
             print("searching for jsons")
-            files = glob.glob(path + "/new_jan/*.jan")
+            files = glob.glob(path + "/marked_up_jan/*.jan")
             #print(files)
             for eachfile in files:
                 if eachfile not in loadedFileList:
