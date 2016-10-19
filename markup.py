@@ -1,5 +1,6 @@
 import os
 import re
+import StringIO, rfc822
 
 from file_utils import F
 from jan import JAN
@@ -22,6 +23,18 @@ class MarkUpHandler:
             for link in dump_links(uri):
                 jan.add_metadata("link", link)
             lang = 'english'
+        elif type == "pdf":
+            text = dump_pdf(uri)
+            lang = 'english'
+        elif type == "email":
+            message = parse_email(uri)
+            jan.add_metadata("from", message["From"])
+            jan.add_metadata("author", message["From"])
+            jan.add_metadata("subject", message["Subject"])
+            jan.add_metadata("date", message["Date"])
+            text = message.fp.read()
+            text = re.sub(".*\n\n(.*)", "\g<1>", text)
+            lang = 'english'
         else:
             print "type not yet supported:", type
             print uri
@@ -43,3 +56,12 @@ def dump_links(url):
         if re.match(".*http.*", line):
             links[re.sub(".*(http.*)", "\g<1>", line)] = None
     return links.keys()
+
+def dump_pdf(uri):
+    path = F.path_from_uri(uri)
+    return os.popen("pdftotext " + path + " -").read()
+
+def parse_email(uri):
+    text = F.slurp(uri)
+    io = StringIO.StringIO(text)
+    return rfc822.Message(io)

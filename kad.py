@@ -9,12 +9,16 @@ from dir_watcher import DirWatcher
 from file_utils import F
 from jan import JAN
 from markup import MarkUpHandler
+from sync_mail import SyncMail
 from ui import UI
 
 class KAD:
     def __init__(self):
         self.new_watcher = DirWatcher(JAN.NewDir, MarkUpHandler)
         self.new_watcher.start()
+
+        self.sync_mail = SyncMail("pop.gmail.com", "houshifu1234@gmail.com", "hsf12345")
+        self.sync_mail.start()
 
         self.filename = ""
 
@@ -24,9 +28,6 @@ class KAD:
         # magic to make control-c work
         # http://stackoverflow.com/questions/16410852/keyboard-interrupt-with-with-python-gtk
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    def add_jan(self, jan):
-        F.dump(jan.new_path(), jan.to_json())
 
     def current_uri(self):
         return F.uri_from_path(self.filename)
@@ -66,6 +67,7 @@ class KAD:
     def shutdown(self):
         self.ensure_saved()
         self.new_watcher.stop = True
+        self.sync_mail.stop = True
 
     # javascript bridge functions
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+import datetime
+import getpass
 import json
 import os
+import re
 import sys
 import uuid
 
@@ -19,14 +22,24 @@ class JAN:
         return jan
 
     @staticmethod
-    def new_from_uri_and_type(uri, type):
+    def new_from_uri_and_type(uri, janType):
         jan = JAN()
+        if janType == None:
+            janType = re.sub("[^.]*\.(.*)", "\g<1>", uri)
+        # map mbox to email in case someone opens an mbox file
+        # outside of the syncing process
+        if janType == "mbox":
+            janType = "email"
         jan.map = {
-                'type': type,
+                'type': janType,
                 'link': uri,
                 'uuid': JAN.uuid_from_uri(uri),
                 'metadata': []
                 }
+        time = str(datetime.datetime.now())
+        user = getpass.getuser()
+        jan.add_metadata('retrieval time', time)
+        jan.add_metadata('originating user', user)
         return jan
 
     @staticmethod
@@ -35,7 +48,7 @@ class JAN:
         jan.map = {'uuid': JAN.uuid_from_uri(uri)}
         for filename in [jan.networked_path(), jan.marked_up_path(),
                          jan.new_path()]:
-             if os.path.isfile(filename):
+             if F.file_exists(filename):
                  jan = JAN.new_from_json(F.slurp(filename))
                  return jan
         return None
@@ -43,6 +56,9 @@ class JAN:
     @staticmethod
     def uuid_from_uri(uri):
         return str(uuid.uuid5(uuid.NAMESPACE_URL, uri))
+
+    def add_new(self):
+        F.dump(self.new_path(), self.to_json())
 
     def promote_new_to_marked_up(self):
         F.dump(self.marked_up_path(), self.to_json())
