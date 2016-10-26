@@ -13,7 +13,7 @@ from gi.repository import EvinceView
 
 import hashlib
 import re
-import urllib
+import os
 import uuid
 
 from file_utils import F
@@ -46,31 +46,28 @@ class UI:
 
     def prepare(self):
         self.window = self.builder.get_object("main_window")
-        self.location_entry = self.builder.get_object("location_entry")
+        self.editor_location_entry = self.builder.get_object("editor_location_entry")
+        self.knowledge_location_entry = self.builder.get_object("knowledge_location_entry")
 
         accelerators = Gtk.AccelGroup()
         self.window.add_accel_group(accelerators)
         key, mod = Gtk.accelerator_parse("<Control>l")
-        self.location_entry.add_accelerator("grab-focus", accelerators, key, mod, Gtk.AccelFlags.VISIBLE)
+        self.knowledge_location_entry.add_accelerator("grab-focus", accelerators, key, mod, Gtk.AccelFlags.VISIBLE)
         key, mod = Gtk.accelerator_parse("<Control>q")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.main_window_delete)
-        self.notebook = self.builder.get_object("notebook")
 
         # gtkwebkit
-        self.knowledge_window = self.builder.get_object("knowledge_window")
+        self.browser_window = self.builder.get_object("browser_window")
         self.browser_view = WebKit2.WebView()
         self.browser_view.connect("load-changed", self.load_changed)
         self.browser_view.connect("decide-policy", self.decide_policy)
         self.browser_view.get_context().connect("download-started", self.download_started)
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
-        self.current_knowledge_view = self.browser_view
-        self.knowledge_window.add(self.current_knowledge_view)
-
-        self.open_uri("http://scholar.google.com/")
+        self.browser_window.add(self.browser_view)
 
         # gtksourceview
         self.editor_buffer = GtkSource.Buffer()
-        self.kad.load_file("kad.py")
+        self.open_uri(F.uri_from_path("example_tex/paper.tex"))
         self.editor_view = GtkSource.View.new_with_buffer(self.editor_buffer)
         self.editor_view.set_auto_indent(True)
         self.editor_view.set_show_line_numbers(True)
@@ -80,17 +77,19 @@ class UI:
         self.editor_window = self.builder.get_object("editor_window")
         self.editor_window.add(self.editor_view)
         key, mod = Gtk.accelerator_parse("<Control>s")
-        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.kad.save_file)
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.save_editor_button_clicked)
 
         # save and reload KAD with Control-R
         key, mod = Gtk.accelerator_parse("<Control>r")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.kad.reload_kad)
 
         # pdf viewer (Evince)
+        self.pdf_window = self.builder.get_object("pdf_window")
         EvinceDocument.init()
         self.pdf_view = EvinceView.View()
         self.pdf_model = EvinceView.DocumentModel()
         self.pdf_view.set_model(self.pdf_model)
+        self.pdf_window.add(self.pdf_view)
 
         self.jan_scroll_window = self.builder.get_object("jan_scroll_window")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
@@ -101,37 +100,47 @@ class UI:
         self.visualizer_viewport.add(self.visualizer_view)
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
         self.visualizer_view.get_context().register_uri_scheme("python", self.kad.visualizer_request, None, None)
+        self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
 
         # file open dialog
         key, mod = Gtk.accelerator_parse("<Control>o")
-        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.spawn_file_chooser)
+        Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.open_editor_button_clicked)
 
         self.window.maximize()
         self.window.show_all()
 
         self.jan_scroll_window.hide()
+        self.open_uri("http://scholar.google.com/")
 
-    def swap_knowledge_view(self):
-        self.knowledge_window.hide()
-        children = self.knowledge_window.get_children()
-        for child in children:
-            self.knowledge_window.remove(child)
-        if self.current_knowledge_view == self.browser_view:
-            self.current_knowledge_view = self.pdf_view
-        else:
-            self.current_knowledge_view = self.browser_view
-        self.knowledge_window.add(self.current_knowledge_view)
-        self.knowledge_window.show_all()
+    def activate_pdf_view(self):
+        self.browser_window.hide()
+        self.pdf_window.show()
+
+    def activate_web_view(self):
+        self.pdf_window.hide()
+        self.browser_window.show()
 
     def open_uri(self, uri):
         if not("http" in uri) and not("file:///" in uri):
             uri = F.uri_from_path(uri)
-        self.location_entry.set_text(uri)
-        self.location_entry_activate()
+        if (".pdf" in uri) or ("http" in uri):
+            self.knowledge_location_entry.set_text(uri)
+            self.knowledge_location_entry_activate()
+        else:
+            self.editor_location_entry.set_text(uri)
+            self.editor_location_entry_activate()
 
     # begin signal handlers
 
-    def spawn_file_chooser(self, *args):
+    def render_button_clicked(self, *args):
+        self.save_editor_button_clicked()
+        print os.popen("cd example_tex; pdflatex paper").read()
+        self.open_uri(F.uri_from_path("example_tex/paper.pdf"))
+
+    def save_editor_button_clicked(self, *args):
+        self.kad.save_file()
+
+    def open_editor_button_clicked(self, *args):
         file_chooser = Gtk.FileChooserDialog("Open file", self.window,
                                              Gtk.FileChooserAction.OPEN,
                                              (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -171,31 +180,8 @@ class UI:
         self.kad.shutdown()
         Gtk.main_quit(*args)
 
-    def save_button_clicked(self, *args):
-        if self.jan_scroll_window.is_visible():
-            self.jan_reloading = False
-            self.jan_scroll_window.hide()
-        else:
-            uri = self.location_entry.get_text()
-            # detect existing JAN
-            jan = JAN.find_from_uri(uri)
-            if jan == None:
-                # JAN not found, write a new JAN
-                tab = self.get_tab()
-                janType = None
-                if tab == "web":
-                    janType = "url"
-                jan = JAN.new_from_uri_and_type(uri, janType)
-                if tab == "web":
-                    jan.add_metadata('page title', self.browser_view.get_title())
-                jan.add_new()
-            self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
-            self.jan_reloading = True
-            self.jan_reloader = GLib.timeout_add_seconds(1, self.reload_jan)
-            self.jan_scroll_window.show()
-
     def reload_jan(self):
-        uri = self.location_entry.get_text();
+        uri = self.editor_location_entry.get_text();
         jan = JAN.find_from_uri(uri)
         if jan != None:
             new_json = jan.to_pretty_json(4)
@@ -204,28 +190,23 @@ class UI:
                 self.jan_editor_buffer.set_text(jan.to_pretty_json(4))
         return self.jan_reloading
 
-    def visualize_button_clicked(self, *args):
-        if self.visualizer_viewport.is_visible():
-            self.visualizer_viewport.hide()
-        else:
-            self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
-            self.visualizer_viewport.show()
+    def editor_location_entry_activate(self, *args):
+        uri = self.editor_location_entry.get_text()
+        self.kad.load_file(uri)
 
-    def location_entry_activate(self, *args):
-        uri = self.location_entry.get_text()
-        if "file://" in uri:
-            if ".pdf" in uri:
-                self.pdf_document = EvinceDocument.Document.factory_get_document(uri)
-                self.pdf_model.set_document(self.pdf_document)
-                self.swap_knowledge_view()
-            else:
-                self.kad.load_file(uri)
+    def knowledge_location_entry_activate(self, *args):
+        uri = self.knowledge_location_entry.get_text()
+        if ("file://" in uri) and (".pdf" in uri):
+            self.pdf_document = EvinceDocument.Document.factory_get_document(uri)
+            self.pdf_model.set_document(self.pdf_document)
+            self.activate_pdf_view()
         else:
             if not("http" in uri):
                 uri = "http://" + uri
+            self.activate_web_view()
             self.kad.load(uri)
 
     def load_changed(self, *args):
         if args[1] == WebKit2.LoadEvent.FINISHED:
             uri = self.browser_view.get_uri()
-            self.location_entry.set_text(uri)
+            self.knowledge_location_entry.set_text(uri)
