@@ -5,6 +5,7 @@ import json
 import glob
 import os
 import traceback
+import pickle
 """
 Every unique field type in the json has a category master node, stored as Category:field
 Each unique entry is referred to as either and Id unless its a Keyword
@@ -67,6 +68,7 @@ class network (threading.Thread):
                     jsonlist.append(self.janDict[neigh])
             return jsonlist
         except netx.NetworkXError:
+            traceback.print_stack
             return ""
 
     def getCategories(self):
@@ -129,20 +131,74 @@ class network (threading.Thread):
     def begin(self):
         self.start()
         while not self.startFlag:
-            time.sleep(1);
+            time.sleep(1)
 
-    def run(self):
-        #This thread looks for a directory jsons under the location of this script and pulls json files from it
-        #it runs until stopLoading() is called
+    def saveToFile(self):
+        
+        try:
+            path = os.path.dirname(os.path.abspath(__file__)) + "/data/"      
+            netx.write_gpickle(self.janGraph,path + "network")  
+            handle = open(path + "lists.dat", 'w')  
+            json.dump(self.janCategoryList,handle)
+            handle.write("\n")
+            #json.dump(self.janDict,handle)
+            #pickle.dump(self.janDict,handle)            
+            #handle.write("\n")
+            json.dump(self.janIDs,handle)
+            handle.write("\n")
+            json.dump(self.janKeywordList,handle)
+            handle.write("\n")
+            json.dump(self.janMetaList,handle)
+            handle.close()
+            with open(path + "jans",'w') as janHandle:
+                keyz = self.janDict.keys();
+                for key in keyz:
+                    janHandle.write(key + "||" + json.dumps(self.janDict[key]) + "\n")
+            
+        except:
+            print("error writing network data")
+            traceback.print_exc()
+            
+    def loadFromFile(self):
+        try:
+            path = os.path.dirname(os.path.abspath(__file__)) + "/data/"
+            self.janGraph = netx.read_gpickle(path+"network")
+            with open(path+"lists.dat", 'r') as handle:
+                self.janCategoryList = handle.readline().strip()
+                self.janCategoryList = self.janCategoryList[1:-1].replace("\"","").replace(',',"").split()
+                self.janIDs = handle.readline().strip()
+                self.janIDs = self.janIDs[1:-1].replace("\"","").replace(',',"").split()
+                self.janKeywordList = handle.readline().strip()
+                self.janKeywordList= self.janKeywordList[1:-1].replace("\"","").replace(',',"").split()
+                self.janMetaList = handle.readline().strip()
+                self.janMetaList=self.janMetaList[1:-1].replace("\"","").replace(',',"").split()
+                handle.close()
+            with open(path + "jans", 'r') as janHandle:
+                for line in janHandle:                                 
+                    fields = line.split("||")
+                    self.janDict[fields[0]] = json.loads(fields[1].strip())
+            #x1 = self.janDict.keys();
+            #for x in x1:
+                #print(self.janDict[x])
+        except:
+            print("error reading network data")
+            traceback.print_exc()
+    def clearMarkupFolder(self):
         path = os.path.dirname(os.path.abspath(__file__));
-        loadedFileList = list()
+        files = glob.glob(path + "/marked_up_jan/*.jan")
+        for eachFile in files:
+            os.remove(eachFile)
+            print(eachFile + " processed & deleted")
+            
+    def run(self):
+        self.loadFromFile()
+        path = os.path.dirname(os.path.abspath(__file__));
         while self.loadingFlag:
             print("searching for jsons")
             files = glob.glob(path + "/marked_up_jan/*.jan")
             #print(files)
             for eachfile in files:
-                if eachfile not in loadedFileList:
-                    #print(eachfile)
+                try:
                     with open(eachfile) as handle:
                         for eachJan in handle:
                             #print(eachJan)
@@ -150,10 +206,14 @@ class network (threading.Thread):
                                 janjson = json.loads(eachJan)
                                 #print(janjson["uuid"])
                                 self.loadJAN(janjson)
+                                
                             except:
                                 print("error loading jan")
                                 traceback.print_exc()
                         handle.close();
-                    loadedFileList.append(eachfile)
+                except:
+                    print("Error reading in from marked_up_jans")
             self.startFlag = True
+            self.saveToFile()
+            self.clearMarkupFolder()
             time.sleep(10)
