@@ -132,6 +132,13 @@ class UI:
 
     # begin signal handlers
 
+    def settings_button_clicked(self, *args):
+        self.settings_dialog = self.builder.get_object("settings_dialog")
+        self.settings_dialog.run()
+
+    def settings_save_button_clicked(self, *args):
+        self.settings_dialog.hide()
+
     def render_button_clicked(self, *args):
         self.save_editor_button_clicked()
         print os.popen("cd example_tex; pdflatex paper").read()
