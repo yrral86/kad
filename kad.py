@@ -57,7 +57,7 @@ class KAD:
 
     def reload_kad(self, *args):
         self.ensure_saved()
-        os.execl("./kad.py", "./kad.py", self.ui.get_tab())
+        os.execl("./kad.py", "./kad.py")
 
     def main(self, args):
         if len(args) > 1:
