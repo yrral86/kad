@@ -20,7 +20,7 @@ sudo apt-get upgrade
 5. Install a few additional dependencies
 
    ```
-sudo apt-get install libevince lynx python-gi python-networkx
+sudo apt-get install libevince lynx python-gi python-networkx texlive-latex-recommended
    ```
 
 Now, you should be ready to run KAD.  Execute kad.py to get started.
