@@ -34,27 +34,6 @@ class UI:
         language = lm.guess_language(filename)
         self.editor_buffer.set_language(language)
 
-    def select_tab(self, tab):
-        if tab == "web":
-            index = 0
-        elif tab == "edit":
-            index = 1
-        else:
-            index = 2
-        self.notebook.set_current_page(index)
-
-    def get_tab(self):
-        page = self.notebook.get_current_page()
-        return self.get_tab_from_page(page)
-
-    def get_tab_from_page(self, page):
-        if page == 0:
-            return "web"
-        if page == 1:
-            return "edit"
-        if page == 2:
-            return "pdf"
-
     def get_editor_text(self):
         start_iter = self.editor_buffer.get_start_iter()
         end_iter = self.editor_buffer.get_end_iter()
@@ -78,13 +57,14 @@ class UI:
         self.notebook = self.builder.get_object("notebook")
 
         # gtkwebkit
-        browser_window = self.builder.get_object("browser_window")
+        self.knowledge_window = self.builder.get_object("knowledge_window")
         self.browser_view = WebKit2.WebView()
         self.browser_view.connect("load-changed", self.load_changed)
         self.browser_view.connect("decide-policy", self.decide_policy)
         self.browser_view.get_context().connect("download-started", self.download_started)
-        browser_window.add(self.browser_view)
         self.browser_view.get_settings().set_property("enable-developer-extras",True)
+        self.current_knowledge_view = self.browser_view
+        self.knowledge_window.add(self.current_knowledge_view)
 
         self.open_uri("http://scholar.google.com/")
 
@@ -111,8 +91,6 @@ class UI:
         self.pdf_view = EvinceView.View()
         self.pdf_model = EvinceView.DocumentModel()
         self.pdf_view.set_model(self.pdf_model)
-        self.pdf_window = self.builder.get_object("pdf_window")
-        self.pdf_window.add(self.pdf_view)
 
         self.jan_scroll_window = self.builder.get_object("jan_scroll_window")
         self.jan_editor_buffer = self.builder.get_object("jan_editor_buffer")
@@ -132,7 +110,18 @@ class UI:
         self.window.show_all()
 
         self.jan_scroll_window.hide()
-        self.visualizer_viewport.hide()
+
+    def swap_knowledge_view(self):
+        self.knowledge_window.hide()
+        children = self.knowledge_window.get_children()
+        for child in children:
+            self.knowledge_window.remove(child)
+        if self.current_knowledge_view == self.browser_view:
+            self.current_knowledge_view = self.pdf_view
+        else:
+            self.current_knowledge_view = self.browser_view
+        self.knowledge_window.add(self.current_knowledge_view)
+        self.knowledge_window.show_all()
 
     def open_uri(self, uri):
         if not("http" in uri) and not("file:///" in uri):
@@ -219,15 +208,7 @@ class UI:
         if self.visualizer_viewport.is_visible():
             self.visualizer_viewport.hide()
         else:
-            tab = self.get_tab()
-            filepath = ""
-            if tab == "edit":
-                filepath = self.kad.current_uri()
-            elif tab == "pdf":
-                filepath = self.pdf_document.get_uri()
-
-            if filepath != "":
-                self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
+            self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
             self.visualizer_viewport.show()
 
     def location_entry_activate(self, *args):
@@ -236,30 +217,15 @@ class UI:
             if ".pdf" in uri:
                 self.pdf_document = EvinceDocument.Document.factory_get_document(uri)
                 self.pdf_model.set_document(self.pdf_document)
-                self.select_tab("pdf")
+                self.swap_knowledge_view()
             else:
                 self.kad.load_file(uri)
-                self.select_tab("edit")
         else:
             if not("http" in uri):
                 uri = "http://" + uri
             self.kad.load(uri)
-            self.select_tab("web")
 
     def load_changed(self, *args):
-        if args[1] == WebKit2.LoadEvent.FINISHED and self.get_tab() == "web":
+        if args[1] == WebKit2.LoadEvent.FINISHED:
             uri = self.browser_view.get_uri()
-            visualization_uri = "http://www.infocaptor.com/bubble-my-page?url=" + \
-                                urllib.quote_plus(uri) + "&size=400"
             self.location_entry.set_text(uri)
-            self.visualizer_view.load_uri(visualization_uri)
-
-    def notebook_page_changed(self, notebook, page, page_num, *args):
-        tab = self.get_tab_from_page(page_num)
-        if tab == "web":
-            location = self.browser_view.get_uri()
-        elif tab == "edit":
-            location = self.kad.current_uri()
-        else:
-            location = self.pdf_document.get_uri()
-        self.location_entry.set_text(location)
