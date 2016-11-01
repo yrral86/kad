@@ -12,6 +12,9 @@ from markup import MarkUpHandler
 from sync_mail import SyncMail
 from ui import UI
 
+from gi.repository import Gio
+from itertools import groupby 
+
 class KAD:
     def __init__(self):
         self.new_watcher = DirWatcher(JAN.NewDir, MarkUpHandler)
@@ -71,14 +74,49 @@ class KAD:
 
     # javascript bridge functions
 
+    jsonList = [];
+    authorList = [];
+    timeList = [];
+    typeList = [];
+
     def visualizer_request(self, request, *args):
+        request.finish(Gio.MemoryInputStream(), 0, "text/html")
         eval("self." + request.get_path())
 
-    def trigger_update(self, thing):
-       self.js_function("update", {'test': "stuff", 'things': ['one', 2, {'name': "iii"}], "from_js": thing})
+    def getJansFromKeyword(self, keyword):
+        json_author = [];
+        json_time = [];
+        json_type = [];
+
+        json_context = F.slurp(F.uri_from_path("hardcode/" + keyword + ".json"))
+        self.jsonList = json.loads(json_context)
+        self.js_function("getJansFromKeyword",json_context)
+
+        #for i in range(0,len(self.jsonList)):
+        for d in self.jsonList:
+            for key,value in d.iteritems():
+                if key == "author":
+                    json_author.append(value)
+                if key == "time":
+                    json_time.append(value)
+                if key == "type":
+                    json_type.append(value)
+        self.authorList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_author))]
+        self.timeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_time))]
+        self.typeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_type))]
+
+    def getIdsFromCategory(self,category):
+
+        if category == "author":
+            showList = self.authorList
+        elif category == "time":
+            showList = self.timeList
+        elif category == "type":
+            showList = self.typeList
+        self.js_function("getIdsFromCategory", json.dumps(showList))
 
     def js_function(self, function, param):
-        self.ui.visualizer_view.run_javascript(function + "(" + json.dumps(param) + ")", None, None)
+        self.ui.visualizer_view.run_javascript(function +"(" + json.dumps(param) + ")", None, None)
 
 
 kad = KAD()
