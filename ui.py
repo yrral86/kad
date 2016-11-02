@@ -48,6 +48,7 @@ class UI:
         self.window = self.builder.get_object("main_window")
         self.editor_location_entry = self.builder.get_object("editor_location_entry")
         self.knowledge_location_entry = self.builder.get_object("knowledge_location_entry")
+        self.save_jan_button = self.builder.get_object("save_jan_button")
 
         accelerators = Gtk.AccelGroup()
         self.window.add_accel_group(accelerators)
@@ -125,7 +126,7 @@ class UI:
             uri = F.uri_from_path(uri)
         if (".pdf" in uri) or ("http" in uri):
             self.knowledge_location_entry.set_text(uri)
-            self.knowledge_location_entry_activate()
+            self.knowledge_location_entry_activate(True)
         else:
             self.editor_location_entry.set_text(uri)
             self.editor_location_entry_activate()
@@ -211,9 +212,30 @@ class UI:
             if not("http" in uri):
                 uri = "http://" + uri
             self.activate_web_view()
-            self.kad.load(uri)
+            if args[0]:
+                self.kad.load(uri)
+        if JAN.find_from_uri(uri) == None:
+            self.save_jan_button.show()
+        else:
+            self.save_jan_button.hide()
 
     def load_changed(self, *args):
         if args[1] == WebKit2.LoadEvent.FINISHED:
             uri = self.browser_view.get_uri()
             self.knowledge_location_entry.set_text(uri)
+            self.knowledge_location_entry_activate(False)
+
+    def save_jan_button_clicked(self, *args):
+        uri = self.knowledge_location_entry.get_text()
+        # detect existing JAN
+        jan = JAN.find_from_uri(uri)
+        if jan == None:
+            # JAN not found, write a new JAN
+            janType = None
+            if "http" in uri:
+                janType = "url"
+            jan = JAN.new_from_uri_and_type(uri, janType)
+            if "http" in uri:
+                jan.add_metadata('page title', self.browser_view.get_title())
+            jan.add_new()
+            self.knowledge_location_entry_activate(False)
