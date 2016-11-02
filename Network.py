@@ -5,7 +5,7 @@ import json
 import glob
 import os
 import traceback
-import pickle
+
 """
 Every unique field type in the json has a category master node, stored as Category:field
 Each unique entry is referred to as either and Id unless its a Keyword
@@ -21,6 +21,7 @@ class network (threading.Thread):
     janIDs = []
     startFlag = False
     janMetaList = []
+    currentBase = ""
 
     def __init__(self):
         super(network, self).__init__()
@@ -136,14 +137,11 @@ class network (threading.Thread):
     def saveToFile(self):
         
         try:
-            path = os.path.dirname(os.path.abspath(__file__)) + "/data/"      
+            path=self.currentBase   
             netx.write_gpickle(self.janGraph,path + "network")  
             handle = open(path + "lists.dat", 'w')  
             json.dump(self.janCategoryList,handle)
             handle.write("\n")
-            #json.dump(self.janDict,handle)
-            #pickle.dump(self.janDict,handle)            
-            #handle.write("\n")
             json.dump(self.janIDs,handle)
             handle.write("\n")
             json.dump(self.janKeywordList,handle)
@@ -159,9 +157,14 @@ class network (threading.Thread):
             print("error writing network data")
             traceback.print_exc()
             
-    def loadFromFile(self):
+    def loadFromFile(self,baseName):
         try:
-            path = os.path.dirname(os.path.abspath(__file__)) + "/data/"
+            if baseName:
+                path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName
+            else:
+                path = os.path.dirname(os.path.abspath(__file__)) + "/data/Default/" 
+                
+            self.currentBase = path  #saves current path for later access
             self.janGraph = netx.read_gpickle(path+"network")
             with open(path+"lists.dat", 'r') as handle:
                 self.janCategoryList = handle.readline().strip()
@@ -181,8 +184,8 @@ class network (threading.Thread):
             #for x in x1:
                 #print(self.janDict[x])
         except:
-            print("error reading network data")
-            traceback.print_exc()
+            print("error reading network datafile or file missing")
+            #traceback.print_exc()
     def clearMarkupFolder(self):
         path = os.path.dirname(os.path.abspath(__file__));
         files = glob.glob(path + "/marked_up_jan/*.jan")
@@ -190,8 +193,27 @@ class network (threading.Thread):
             os.remove(eachFile)
             print(eachFile + " processed & deleted")
             
+    def mergeNetworks(self,path1,path2):
+        #merge 2 files
+        pass
+    def loadNetworkBase(self,networkBase):            
+        pass#blah    
+    
+    def createNetworkBase(self,networkBase):
+        pass#blah
+    def deleteNetworkBase(self,networkBase):
+        pass
+    def getNetworkBases(self):
+        networkBases = list()
+        path = os.path.dirname(os.path.abspath(__file__));
+        path += ("/data")
+        for folders in os.walk(path):
+            for base in folders[1]:
+                networkBases.append(base)
+        return networkBases
+        
     def run(self):
-        self.loadFromFile()
+        self.loadFromFile("")
         path = os.path.dirname(os.path.abspath(__file__));
         while self.loadingFlag:
             print("searching for jsons")

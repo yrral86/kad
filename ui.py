@@ -111,7 +111,15 @@ class UI:
 
         self.jan_scroll_window.hide()
         self.open_uri("http://scholar.google.com/")
-
+        
+        self.box = self.builder.get_object("janbase_selection_box")
+        self.model = Gtk.ListStore(str)
+        self.model.append(self.kad.get_janbases())
+        self.box.set_model(self.model)
+        self.cell = Gtk.CellRendererText()
+        self.box.pack_start(self.cell, True)
+        self.box.add_attribute(self.cell, 'text',0)
+        
     def activate_pdf_view(self):
         self.browser_window.hide()
         self.pdf_window.show()
@@ -217,3 +225,27 @@ class UI:
         if args[1] == WebKit2.LoadEvent.FINISHED:
             uri = self.browser_view.get_uri()
             self.knowledge_location_entry.set_text(uri)
+    
+    def merge_janbase_clicked(self, *args):
+        #merge janbases
+        pass
+    def create_janbase_clicked(self,*args):
+        #create janbase
+        self.builder.get_object("janbase_reusable_dialog").show()
+        self.builder.get_object("combo_box1_label").hide()
+        self.builder.get_object("combo_box2_label").hide()
+        self.builder.get_object("combo_box1_janbase").hide()
+        self.builder.get_object("combo_box2_janbase").hide()
+        self.builder.get_object("text_box1_label").set_label("Enter new Janbase name")
+        self.builder.get_object("text_box1").set_text("")
+        self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
+        
+    def load_janbase_clicked(self, *args):
+        pass
+    def delete_janbase_clicked(self, *args):
+        pass
+    def janbase_selection_box_changed(self, *args):
+        pass
+    def settings_cancel_button_clicked(self, *args):
+        self.settings_dialog.hide()
+        

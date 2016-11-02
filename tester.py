@@ -6,10 +6,12 @@ import Network;
 G = Network.network()
 G.begin()
 #G.loadFromFile()
-print(G.getCategories())
+#print(G.getCategories())
 #G.saveToFile()
 
-
+list = G.getNetworkBases();
+print(list)
+"""
 categoryList = G.getCategories()  #returns a list of strings
 
 for x in categoryList:      #this loop runs through all categories and prints all IDs associated
@@ -17,7 +19,7 @@ for x in categoryList:      #this loop runs through all categories and prints al
     for z in y:
         print("List for " + x + ": " + z)
 print("\n")
-
+"""
 """
 y=G.getKeywordCategories()
 print(y)
@@ -33,7 +35,7 @@ for z in y:         #this loop prints each keyword and the jans associated with 
     print("Keyword:" + z)
     #print(G.getJansFromKeyword(z))
 """
-print(G.getJansFromKeyword("page"))
+#print(G.getJansFromKeyword("page"))
 G.stopLoading()
 
 #print(G.getJansFromId("Google")) #returns list of json
