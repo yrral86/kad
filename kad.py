@@ -87,5 +87,9 @@ class KAD:
     def get_janbases(self):
         return self.G.getNetworkBases()
         
+    def create_janbase(self, base_name):
+        self.G.createNetworkBase(base_name)
+        
+        
 kad = KAD()
 kad.main(sys.argv)

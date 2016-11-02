@@ -113,13 +113,23 @@ class UI:
         self.jan_scroll_window.hide()
         self.open_uri("http://scholar.google.com/")
         
-        self.box = self.builder.get_object("janbase_selection_box")
+        self.cbox = self.builder.get_object("janbase_selection_box")
         self.model = Gtk.ListStore(str)
-        self.model.append(self.kad.get_janbases())
-        self.box.set_model(self.model)
+        self.cbox.set_model(self.model)        
         self.cell = Gtk.CellRendererText()
-        self.box.pack_start(self.cell, True)
-        self.box.add_attribute(self.cell, 'text',0)
+        self.cbox.pack_start(self.cell, False)
+        self.cbox.add_attribute(self.cell, 'text',0)
+        self.populate_selection_box()        
+        
+    def populate_selection_box(self):        
+        self.cbox = self.builder.get_object("janbase_selection_box")
+        self.model = self.cbox.get_model()
+        self.model.clear()
+        
+        for janbases in self.kad.get_janbases():
+            self.model.append([janbases])
+            #print(janbases)
+    
         
     def activate_pdf_view(self):
         self.browser_window.hide()
@@ -231,12 +241,18 @@ class UI:
         if args[1] == WebKit2.LoadEvent.FINISHED:
             uri = self.browser_view.get_uri()
             self.knowledge_location_entry.set_text(uri)
-	    self.knowledge_location_entry_activate(False)
-<<<<<<< HEAD
+            self.knowledge_location_entry_activate(False)
     
     def merge_janbase_clicked(self, *args):
         #merge janbases
         pass
+    
+    def create_janbase(self, *args):
+        if self.builder.get_object("text_box1").get_text() != "":
+            self.kad.create_janbase(self.builder.get_object("text_box1").get_text())  
+            self.builder.get_object("janbase_reusable_dialog").hide()    
+            self.populate_selection_box()
+            
     def create_janbase_clicked(self,*args):
         #create janbase
         self.builder.get_object("janbase_reusable_dialog").show()
@@ -247,6 +263,9 @@ class UI:
         self.builder.get_object("text_box1_label").set_label("Enter new Janbase name")
         self.builder.get_object("text_box1").set_text("")
         self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
+        action_button = self.builder.get_object("janbase_action_button")
+        action_button.set_label("create")
+        action_button.connect("clicked",self.create_janbase,None)
         
     def load_janbase_clicked(self, *args):
         pass
@@ -256,10 +275,7 @@ class UI:
         pass
     def settings_cancel_button_clicked(self, *args):
         self.settings_dialog.hide()
-        
-=======
             
-
     def save_jan_button_clicked(self, *args):
         uri = self.knowledge_location_entry.get_text()
         # detect existing JAN
@@ -274,4 +290,6 @@ class UI:
                 jan.add_metadata('page title', self.browser_view.get_title())
             jan.add_new()
             self.knowledge_location_entry_activate(False)
->>>>>>> master
+    
+    def janbase_cancel_button_clicked(self, *args):
+        self.builder.get_object("janbase_reusable_dialog").hide()
