@@ -4,6 +4,7 @@ import json
 import os
 import signal
 import sys
+import Network
 
 from dir_watcher import DirWatcher
 from file_utils import F
@@ -13,6 +14,7 @@ from sync_mail import SyncMail
 from ui import UI
 
 class KAD:
+    G = Network.network()
     def __init__(self):
         self.new_watcher = DirWatcher(JAN.NewDir, MarkUpHandler)
         self.new_watcher.start()
@@ -28,7 +30,8 @@ class KAD:
         # magic to make control-c work
         # http://stackoverflow.com/questions/16410852/keyboard-interrupt-with-with-python-gtk
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-
+        self.G.begin()
+        
     def current_uri(self):
         return F.uri_from_path(self.filename)
 
@@ -68,6 +71,7 @@ class KAD:
         self.ensure_saved()
         self.new_watcher.stop = True
         self.sync_mail.stop = True
+        self.G.stopLoading()
 
     # javascript bridge functions
 
@@ -79,7 +83,9 @@ class KAD:
 
     def js_function(self, function, param):
         self.ui.visualizer_view.run_javascript(function + "(" + json.dumps(param) + ")", None, None)
-
-
+    
+    def get_janbases(self):
+        return self.G.getNetworkBases()
+        
 kad = KAD()
 kad.main(sys.argv)
