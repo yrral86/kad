@@ -137,7 +137,9 @@ class network (threading.Thread):
     def saveToFile(self):
         
         try:
-            path=self.currentBase   
+            path=self.currentBase
+            if not os.path.exists(path):
+                os.makedirs(path)
             netx.write_gpickle(self.janGraph,path + "network")  
             handle = open(path + "lists.dat", 'w')  
             json.dump(self.janCategoryList,handle)
@@ -200,7 +202,17 @@ class network (threading.Thread):
         pass#blah    
     
     def createNetworkBase(self,networkBase):
-        pass#blah
+        self.saveToFile()
+        path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+ networkBase + "/"
+        self.currentBase = path
+        self.janGraph = netx.Graph()
+        self.janDict = {}
+        self.janKeywordList = []
+        self.janCategoryList = []
+        self.janIDs = []
+        self.janMetaList = []
+        self.saveToFile()
+        
     def deleteNetworkBase(self,networkBase):
         pass
     def getNetworkBases(self):
