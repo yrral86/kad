@@ -10,7 +10,7 @@
 
     table{
         border-style: solid;
-        border-width: 2px;
+        border-width: 0px;
         border-collapse: collapse;
         margin-left:auto; 
         margin-right:auto;
@@ -18,7 +18,7 @@
 
     td{
         border-style: solid;
-        border-width: 2px;
+        border-width: 0px;
         vertical-align: top;
         border-collapse: collapse;
         margin-left:auto; 
@@ -48,8 +48,8 @@
     <tr>
       <td >
         <div style="text-align:left">
-           filter: 
-           <select id="flt_ctg"></select>
+           Filter: 
+           <select id="flt_ctg"></select><hr>
         </div>
         <div>
           <svg id="panel">
@@ -236,15 +236,6 @@
       .attr("class", "bubbles")
       .on("click", function(d,i){
 
-        for(var j= 0 ; j < circleAttr.length; j++){
-          if(d.uuid == circleAttr[j].uuid){
-           var x1 =  getXpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
-           var y1 =  getYpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
-
-            break;
-          }
-        }
-
         svg.selectAll("line").remove();
         svg.selectAll(".lines").remove();
 
@@ -253,6 +244,25 @@
           linePoint = "";
           isShownLine = false;
         }else{
+
+          //shows Jans' Url
+          switch (d.type){
+            case "url":
+            case "URL":
+              call_python("showJansUrl", d.link)
+            break;
+          }
+
+          //shows keywords lines between Jans
+          for(var j= 0 ; j < circleAttr.length; j++){
+           if(d.uuid == circleAttr[j].uuid){
+             var x1 =  getXpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+             var y1 =  getYpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+
+              break;
+            }
+          }
+
           for(var j = 0; j < d.keywords.length; j++){
           for(var k = 0; k < keyword_array.length; k++){
             

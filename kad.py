@@ -115,6 +115,9 @@ class KAD:
             showList = self.typeList
         self.js_function("getIdsFromCategory", json.dumps(showList))
 
+    def showJansUrl(self, jan_url):
+        self.load(jan_url)
+
     def js_function(self, function, param):
         self.ui.visualizer_view.run_javascript(function +"(" + json.dumps(param) + ")", None, None)
 
