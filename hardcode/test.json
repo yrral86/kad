@@ -1,0 +1,4 @@
+[{"uuid": "id3", "type": "URL", "time": 2016,"link": "http://www.amazon.com", "keywords":["work","fun"],"author":"Hawking"},
+{"uuid": "id14", "type": "URL", "time": 2016, "link": "https://twitter.com/realdonaldtrump?lang=en","fakequote":"I'm here to make sure Hilary wins.", "keywords":["twitter","fun","lies"],"author":"Donald Trumpt"},
+{"uuid": "Multimodal Deep Learning", "type": "PDF", "time": 2011, "author": "J Ngiam","title":"Multimodal_Deep_Learning","keywords":["work","hard","deep learning"]},
+{"uuid": "id7", "type": "URL", "time": 2016, "link": "http://www.youtube.com", "keywords":["video","deep learning","fun","lie"],"author":"Google"}]

@@ -16,6 +16,7 @@ import re
 import os
 import uuid
 
+from visual import V
 from file_utils import F
 from jan import JAN
 
@@ -25,6 +26,7 @@ class UI:
         self.builder = Gtk.Builder()
         self.builder.add_from_file(file)
         self.builder.connect_signals(self)
+        self.V = V(self)
 
     def main(self):
         Gtk.main()
@@ -99,7 +101,7 @@ class UI:
         self.visualizer_view.get_settings().set_enable_developer_extras(True)
         self.visualizer_viewport.add(self.visualizer_view)
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
-        self.visualizer_view.get_context().register_uri_scheme("python", self.kad.visualizer_request, None, None)
+        self.visualizer_view.get_context().register_uri_scheme("python", self.V.visualizer_request, None, None)
         self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
 
         # file open dialog
@@ -169,6 +171,7 @@ class UI:
         download.connect("finished", self.download_finished)
 
     def download_finished(self, download):
+        response = download.get_response();
         status = download.get_response().get_status_code()
         if status == 200:
             uri = download.get_destination()

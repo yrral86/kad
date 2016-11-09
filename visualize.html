@@ -250,6 +250,12 @@
             case "url":
             case "URL":
               call_python("showJansUrl", d.link)
+              console.log(d.link);
+            break;
+            case "PDF":
+            case "pdf":
+              call_python("showJansPdf", d.title)
+              console.log(d.title);
             break;
           }
 
