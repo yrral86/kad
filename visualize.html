@@ -249,8 +249,9 @@
           switch (d.type){
             case "url":
             case "URL":
-              call_python("showJansUrl", d.link)
-              console.log(d.link);
+              var sentLink = encodeURIComponent(d.link)
+              call_python("showJansUrl", sentLink)
+              console.log(sentLink);
             break;
             case "PDF":
             case "pdf":

@@ -1,5 +1,6 @@
 # javascript bridge functions
 import json
+import urllib
 
 from gi.repository import Gio
 from itertools import groupby 
@@ -51,10 +52,10 @@ class V:
         self.kad.js_function("getIdsFromCategory", json.dumps(showList))
 
     def showJansUrl(self, jan_url):
-        self.ui.open_uri(jan_url)
+        decode_url = urllib.unquote(jan_url) #to avoid unread the content after the question mark
+        self.ui.open_uri(decode_url)
 
     def showJansPdf(self, title):
-        print("ShowJansPdf: " + F.uri_from_path("pdf/" + title +".pdf"))
         self.ui.open_uri(F.uri_from_path("pdf/" + title +".pdf"))
 
 
