@@ -120,6 +120,23 @@ class UI:
         self.cbox.pack_start(self.cell, False)
         self.cbox.add_attribute(self.cell, 'text',0)
         self.populate_selection_box()        
+
+        self.cbox_janbase1 = self.builder.get_object("combo_box1_janbase")
+        self.model1 = Gtk.ListStore(str)
+        self.cbox_janbase1.set_model(self.model1)        
+        self.cell1 = Gtk.CellRendererText()
+        self.cbox_janbase1.pack_start(self.cell1, False)
+        self.cbox_janbase1.add_attribute(self.cell1, 'text',0)
+        
+        self.cbox_janbase2 = self.builder.get_object("combo_box2_janbase")
+        self.model2 = Gtk.ListStore(str)
+        self.cbox_janbase2.set_model(self.model2)        
+        self.cell2 = Gtk.CellRendererText()
+        self.cbox_janbase2.pack_start(self.cell2, False)
+        self.cbox_janbase2.add_attribute(self.cell2, 'text',0)
+        
+        
+        
         
     def populate_selection_box(self):        
         self.cbox = self.builder.get_object("janbase_selection_box")
@@ -244,9 +261,42 @@ class UI:
             self.knowledge_location_entry_activate(False)
     
     def merge_janbase_clicked(self, *args):
-        #merge janbases
-        pass
-    
+        self.builder.get_object("janbase_reusable_dialog").show()
+        self.builder.get_object("combo_box1_label").show()
+        self.builder.get_object("combo_box2_label").show()
+        self.builder.get_object("combo_box1_janbase").show()
+        self.builder.get_object("combo_box2_janbase").show()
+        self.builder.get_object("text_box1_label").hide()
+        self.builder.get_object("text_box1").hide()
+        self.builder.get_object("combo_box1_label").set_label("Merge")
+        self.builder.get_object("combo_box2_label").set_label("into")
+        
+        self.cbox = self.builder.get_object("combo_box1_janbase")
+        print(self.cbox)
+        self.model = self.cbox.get_model()
+        self.model.clear()
+        self.cbox2 = self.builder.get_object("combo_box2_janbase")
+        self.model2 = self.cbox2.get_model()
+        self.model2.clear()
+        for janbases in self.kad.get_janbases():
+            self.model.append([janbases])        
+            self.model2.append([janbases])
+            
+        self.builder.get_object("combo_box_action_label").set_label("Merge Janbases")
+        action_button = self.builder.get_object("janbase_action_button")
+        action_button.set_label("merge")
+        action_button.connect("clicked",self.merge_janbase,None)
+        
+    def merge_janbase(self,*args):
+        janbase_merge_target = self.builder.get_object("combo_box1_janbase").get_active()
+        janbase_to_merge = self.builder.get_object("combo_box2_janbase").get_active()
+        
+        if janbase_merge_target == janbase_to_merge or janbase_merge_target == "" or janbase_to_merge =="":
+            pass #error message
+        else:
+            self.kad.merge_janbases(janbase_merge_target,janbase_to_merge)
+            self.builder.get_object("janbase_reusable_dialog").hide()
+            
     def create_janbase(self, *args):
         if self.builder.get_object("text_box1").get_text() != "":
             self.kad.create_janbase(self.builder.get_object("text_box1").get_text())  
@@ -267,8 +317,29 @@ class UI:
         action_button.set_label("create")
         action_button.connect("clicked",self.create_janbase,None)
         
+    def load_janbase(self,*args):
+        if self.builder.get_object("combo_box1_janbase").get_active() != "":
+            self.kad.load_janbase(self.builder.getobject("combo_box1_janbase").get_active())
+            self.builder.get_object("janbase_reusable_dialog").hide()
+        
     def load_janbase_clicked(self, *args):
-        pass
+        self.builder.get_object("janbase_reusable_dialog").show()
+        self.builder.get_object("Select Janbase").show()
+        self.builder.get_object("combo_box2_label").hide()
+        self.builder.get_object("combo_box1_janbase").show()
+        self.builder.get_object("combo_box2_janbase").hide()
+        self.builder.get_object("text_box1_label").hide()
+        self.builder.get_object("text_box1").hide()
+        self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
+        action_button = self.builder.get_object("janbase_action_button")
+        action_button.set_label("load")
+        action_button.connect("clicked",self.load_janbase,None)
+        janbase_list = self.builder.get_object("combo_box1_janbase").getModel()
+        janbase_list.clear()
+        for janbases in self.kad.get_janbases():
+            janbase_list.append([janbases])
+        janbase_list.active = 0
+        
     def delete_janbase_clicked(self, *args):
         pass
     def janbase_selection_box_changed(self, *args):

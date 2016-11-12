@@ -140,6 +140,8 @@ class network (threading.Thread):
             path=self.currentBase
             if not os.path.exists(path):
                 os.makedirs(path)
+                os.makedirs(path + "new_jans")
+                os.makedirs(path + "marked_up_jans")
             netx.write_gpickle(self.janGraph,path + "network")  
             handle = open(path + "lists.dat", 'w')  
             json.dump(self.janCategoryList,handle)
@@ -162,7 +164,7 @@ class network (threading.Thread):
     def loadFromFile(self,baseName):
         try:
             if baseName:
-                path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName
+                path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName + "/"
             else:
                 path = os.path.dirname(os.path.abspath(__file__)) + "/data/Default/" 
                 
@@ -195,14 +197,59 @@ class network (threading.Thread):
             os.remove(eachFile)
             print(eachFile + " processed & deleted")
             
-    def mergeNetworks(self,path1,path2):
-        #merge 2 files
-        pass
-    def loadNetworkBase(self,networkBase):            
-        pass#blah    
+    def mergeNetworks(self,base1,base2):  #merge 2 into 1
+        path2 = os.path.dirname(os.path.abspath(__file__)) + base2 + "/";        
+        self.loadNetworkBase(base1)
+        
+        janGraph2 = netx.read_gpickle(path2+"network")
+        janDict2 = []        
+        with open(path2+"lists.dat", 'r') as handle:
+            janCategoryList2 = handle.readline().strip()
+            janCategoryList2 = janCategoryList2[1:-1].replace("\"","").replace(',',"").split()
+            janIDs2 = handle.readline().strip()
+            janIDs2 = janIDs2[1:-1].replace("\"","").replace(',',"").split()
+            janKeywordList2 = handle.readline().strip()
+            janKeywordList2= janKeywordList2[1:-1].replace("\"","").replace(',',"").split()
+            janMetaList2 = handle.readline().strip()
+            janMetaList2 =janMetaList2[1:-1].replace("\"","").replace(',',"").split()
+            handle.close()
+        with open(path2 + "jans", 'r') as janHandle:
+            for line in janHandle:                                 
+                fields = line.split("||")
+                self.janDict2[fields[0]] = json.loads(fields[1].strip())        
+        
+        self.janGraph = netx.compose(self.janGraph,janGraph2)
+        for cata in janCategoryList2:
+            if cata not in self.janCategoryList:
+                self.janCategoryList2.append(cata)
+                
+        for id in janIDs2:
+            if id not in self.janIDs:
+                self.janIDs.append(id)
+                
+        for kw in janKeywordList2:
+            if kw not in self.janKeywordList:
+                self.janKeywordList.append(kw)
+                
+        for ml in janMetaList2:
+            if ml not in self.janMetaList:
+                self.janMetaList.append(ml)
+                
+        for keys in janDict2.keys():
+            if keys not in self.janDict:
+                self.janDict[keys]= janDict2[keys]
+                
+                
+        self.saveToFile()
+    
+    
+    def loadNetworkBase(self,networkBase):
+        self.saveToFile()            
+        self.G=netx.Graph()
+        self.loadFromFile(networkBase)
+        
     
     def createNetworkBase(self,networkBase):
-        self.saveToFile()
         path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+ networkBase + "/"
         self.currentBase = path
         self.janGraph = netx.Graph()
@@ -225,8 +272,8 @@ class network (threading.Thread):
         return networkBases
         
     def run(self):
-        self.loadFromFile("")
-        path = os.path.dirname(os.path.abspath(__file__));
+        self.loadFromFile(None)
+        path = self.currentBase;
         while self.loadingFlag:
             print("searching for jsons")
             files = glob.glob(path + "/marked_up_jan/*.jan")
