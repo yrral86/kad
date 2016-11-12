@@ -89,7 +89,11 @@ class KAD:
         
     def create_janbase(self, base_name):
         self.G.createNetworkBase(base_name)
+    def load_janbase(self, base_name):
+        self.G.loadNetworkBase(base_name)        
         
+    def merge_janbases(self, base1, base2):
+        self.G.mergeNetworks(base1,base2)
         
 kad = KAD()
 kad.main(sys.argv)
