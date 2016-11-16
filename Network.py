@@ -140,6 +140,7 @@ class network (threading.Thread):
             path=self.currentBase
             if not os.path.exists(path):
                 os.makedirs(path)
+            if not os.path.exists(path+"new_jans"):
                 os.makedirs(path + "new_jans")
                 os.makedirs(path + "marked_up_jans")
             netx.write_gpickle(self.janGraph,path + "network")  
@@ -156,7 +157,6 @@ class network (threading.Thread):
                 keyz = self.janDict.keys();
                 for key in keyz:
                     janHandle.write(key + "||" + json.dumps(self.janDict[key]) + "\n")
-            print("data saved")
         except:
             print("error writing network data")
             traceback.print_exc()
@@ -300,7 +300,7 @@ class network (threading.Thread):
 
                 except:
                     print("Error reading in from marked_up_jans")
-            self.saveToFile()
+                self.saveToFile()
             self.startFlag = True
             self.clearMarkupFolder()
             time.sleep(10)
