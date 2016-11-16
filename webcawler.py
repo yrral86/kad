@@ -14,6 +14,8 @@ def webcawler(keyword,pagenum,year):
     fileOut = localDir + keyword + ".txt"
     import urllib, re,codecs,sys
     fileOp = codecs.open(fileOut, 'a', sys.getdefaultencoding())
+    import time
+    time.sleep(3)
     for i in range(0,int(pagenum)):
         pdf_url = driver.find_elements_by_css_selector("a")
         for k in pdf_url:
