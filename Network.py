@@ -28,6 +28,7 @@ class network (threading.Thread):
 
     def stopLoading(self):
         self.loadingFlag = False
+        print("JSON search thread stopped")
 
     def loadJAN(self, janjson):
         self.janDict[janjson["uuid"]] = janjson
@@ -274,13 +275,15 @@ class network (threading.Thread):
         for folders in os.walk(path):
             for base in folders[1]:
                 networkBases.append(base)
+            break
         return networkBases
         
     def run(self):
         self.loadFromFile(None)
         path = self.currentBase;
+        print("JSON search thread started")
         while self.loadingFlag:
-            print("searching for jsons")
+            #print("searching for jsons")
             files = glob.glob(path + "/marked_up_jan/*.jan")
             #print(files)
             for eachfile in files:
