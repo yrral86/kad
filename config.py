@@ -7,3 +7,7 @@ class Config:
         klass.current_janbase = janbase
         for listener in klass.listeners:
             listener()
+
+    @classmethod
+    def current_janbase_dir(klass):
+        return "data/" + klass.current_janbase + "/"

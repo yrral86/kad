@@ -8,6 +8,7 @@ import re
 import sys
 import uuid
 
+from config import Config
 from file_utils import F
 
 class JAN:
@@ -66,7 +67,9 @@ class JAN:
         print "promoted jan " + self.uuid + " with link: " + self.link
 
     def path(self, dir):
-        return dir + "/" + self.uuid + ".jan"
+        directory = Config.current_janbase_dir() + dir
+        F.ensure_directory(directory)
+        return directory + "/" + self.uuid + ".jan"
 
     def new_path(self):
         return self.path(self.NewDir)
