@@ -10,6 +10,7 @@ gi.require_version('EvinceDocument', '3.0')
 from gi.repository import EvinceDocument
 gi.require_version('EvinceView', '3.0')
 from gi.repository import EvinceView
+#from PIL import Image
 
 import hashlib
 import re
@@ -104,6 +105,12 @@ class UI:
         self.visualizer_view.get_context().register_uri_scheme("python", self.V.visualizer_request, None, None)
         self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
 
+        # Image viewer
+        self.img_window = self.builder.get_object("img_window")
+        self.img_view = Gtk.Image()
+        self.img_window.add(self.img_view)
+
+
         # file open dialog
         key, mod = Gtk.accelerator_parse("<Control>o")
         Gtk.AccelGroup.connect(accelerators, key, mod, Gtk.AccelFlags.VISIBLE, self.open_editor_button_clicked)
@@ -116,16 +123,23 @@ class UI:
 
     def activate_pdf_view(self):
         self.browser_window.hide()
+        self.img_window.hide()
         self.pdf_window.show()
 
     def activate_web_view(self):
         self.pdf_window.hide()
+        self.img_window.hide()
         self.browser_window.show()
 
+    def activate_pic_view(self):
+        self.pdf_window.hide()
+        self.browser_window.hide()
+        self.img_window.show()
+
     def open_uri(self, uri):
-        if not("http" in uri) and not("file:///" in uri):
+        if not("http" in uri) and not("file:///" in uri) and not("pic/" in uri):
             uri = F.uri_from_path(uri)
-        if (".pdf" in uri) or ("http" in uri):
+        if (".pdf" in uri) or ("http" in uri) or ("pic/" in uri):
             self.knowledge_location_entry.set_text(uri)
             self.knowledge_location_entry_activate()
         else:
@@ -210,6 +224,9 @@ class UI:
             self.pdf_document = EvinceDocument.Document.factory_get_document(uri)
             self.pdf_model.set_document(self.pdf_document)
             self.activate_pdf_view()
+        elif ("pic/" in uri):
+            self.img_view.set_from_file(uri)
+            self.activate_pic_view()
         else:
             if not("http" in uri):
                 uri = "http://" + uri

@@ -1,6 +1,7 @@
 # javascript bridge functions
 import json
 import urllib
+import os
 
 from gi.repository import Gio
 from itertools import groupby 
@@ -57,5 +58,8 @@ class V:
 
     def showJansPdf(self, title):
         self.ui.open_uri(F.uri_from_path("pdf/" + title +".pdf"))
+
+    def showJansPic(self, jan_url):
+        self.ui.open_uri(os.path.abspath("pic/" + jan_url))
 
 
