@@ -88,6 +88,8 @@ class KAD:
     def merge_janbases(self, base1, base2):
         self.G.mergeNetworks(base1,base2)
         
+    def delete_janbase(self, base):
+        self.G.deleteNetworkBase(base)
 
 kad = KAD()
 kad.main(sys.argv)
