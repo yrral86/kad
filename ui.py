@@ -19,7 +19,7 @@ import uuid
 from file_utils import F
 from jan import JAN
 from webcawler import *
-
+from webcawler2 import *
 class UI:
     def __init__ (self, kad, file):
         self.kad= kad
@@ -144,8 +144,20 @@ class UI:
     def Search_button_clicked(self, *args):
 	Keyword_entry = self.builder.get_object("Keyword_entry")
 	keyword = Keyword_entry.get_text()
-	webcawler(keyword)
-	
+	Pagenum_entry = self.builder.get_object("Pagenum_entry")
+	pagenum = Pagenum_entry.get_text()
+	Year_entry = self.builder.get_object("Year_entry")
+	year = Year_entry.get_text()
+	webcawler(keyword,pagenum,year)
+
+    def Search_button1_clicked(self, *args):
+	Keyword_entry = self.builder.get_object("Keyword_entry")
+	keyword = Keyword_entry.get_text()
+	Pagenum_entry = self.builder.get_object("Pagenum_entry")
+	pagenum = Pagenum_entry.get_text()
+	Year_entry = self.builder.get_object("Year_entry")
+	year = Year_entry.get_text()
+	webcawler2(keyword,pagenum,year)
 
     def settings_save_button_clicked(self, *args):
         self.settings_dialog.hide()
