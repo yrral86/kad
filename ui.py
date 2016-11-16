@@ -368,7 +368,10 @@ class UI:
     def delete_janbase_clicked(self, *args):
         pass
     def janbase_selection_box_changed(self, *args):
-        pass
+        indx = self.builder.get_object("janbase_selection_box").get_active()      
+        modl = self.builder.get_object("janbase_selection_box").get_model()
+        self.kad.load_janbase(modl[indx])
+        
     def settings_cancel_button_clicked(self, *args):
         self.settings_dialog.hide()
             
