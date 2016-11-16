@@ -34,6 +34,7 @@
         fill: black;
         text-anchor: middle;
     }
+    
    
   </style>
   
@@ -48,8 +49,8 @@
     <tr>
       <td >
         <div style="text-align:left">
-           Filter: 
-           <select id="flt_ctg"></select><hr>
+          <label id= "filter_label">Filter: <select id="flt_ctg"></select> <select id="flt_sub"></select><label> 
+          <label id= "time_filter_label">~<select id="flt_sub2"></select></label> <hr> 
         </div>
         <div>
           <svg id="panel">
@@ -72,9 +73,17 @@
 
   var startAngle = [];
   var endAngle = [];
-  var circleAttr = []; // [[length, angle, color, visible]]
+  var circleAttr = []; // [[length, angle, ctime_filter_labelolor, visible]]
 
-  var filter = document.getElementById("flt_ctg"); 
+  var filter_label = document.getElementById("filter_label")
+  filter_label.style.visibility = "hidden"
+  var filter = document.getElementById("flt_ctg");
+  var sub_filter = document.getElementById("flt_sub");
+  sub_filter.style.visibility = "hidden"
+  var time_lable = document.getElementById("time_filter_label");
+  time_lable.style.visibility = "hidden"
+  var time_filter = document.getElementById("flt_sub2");
+
   var svg = d3.select("#panel")
     .attr("width", windowsLength)
     .attr("height", windowsLength)
@@ -114,9 +123,12 @@
 
   function getCategory(category){
 
+    filter_label.style.visibility = "visible"
+
     while(filter.firstChild){
       filter.removeChild(filter.firstChild);
     }
+
     for(var i = 0 ; i < category.length; i++){
       var opt = document.createElement("option");
       opt.setAttribute("value", category[i]);
@@ -137,13 +149,97 @@
     all_ids = JSON.parse(ids);
     show_ids = JSON.parse(ids);
 
+    sub_filter.style.visibility = "visible"
+
+    while(sub_filter.firstChild){
+      sub_filter.removeChild(sub_filter.firstChild);
+    }
+
+    if(filter.options[filter.selectedIndex].value != "time"){
+      time_lable.style.visibility = "hidden"
+
+      var opt = document.createElement("option");
+      opt.setAttribute("value", "all");
+      var opt_show = document.createTextNode("all");
+      opt.appendChild(opt_show);
+      sub_filter.appendChild(opt);
+
+      for(var i = 0; i < all_ids.length; i++){
+        var opt = document.createElement("option");
+        opt.setAttribute("value", i);
+        var opt_show = document.createTextNode(all_ids[i].name);
+        opt.appendChild(opt_show);
+        sub_filter.appendChild(opt);
+      }
+
+      sub_filter.onchange = function(){
+        var selectedOption = sub_filter.options[sub_filter.selectedIndex].value;
+        if(selectedOption == "all"){
+          show_ids = all_ids;
+        }else{
+          show_ids = all_ids;
+          show_ids = show_ids.slice(selectedOption,(parseInt(selectedOption)+1));
+        }
+        drawRing();
+      }
+    }else{
+      var opt = document.createElement("option");
+      opt.setAttribute("value", "all");
+      var opt_show = document.createTextNode("all");
+      opt.appendChild(opt_show);
+      sub_filter.appendChild(opt);
+
+      for(var i = 0; i < all_ids.length; i++){
+        var opt = document.createElement("option");
+        opt.setAttribute("value", i);
+        var opt_show = document.createTextNode(all_ids[i].name);
+        opt.appendChild(opt_show);
+        sub_filter.appendChild(opt);
+      }
+
+      sub_filter.onchange = function(){
+        var startTime = sub_filter.options[sub_filter.selectedIndex].value;
+        if(startTime == "all"){
+          time_lable.style.visibility = "hidden"
+          show_ids = all_ids
+        }else{
+          time_lable.style.visibility = "visible"
+
+          for(var i = startTime; i < all_ids.length; i++){
+            var opt = document.createElement("option");
+            opt.setAttribute("value", i);
+            var opt_show = document.createTextNode(all_ids[i].name);
+            opt.appendChild(opt_show);
+            time_filter.appendChild(opt);
+          }
+
+          time_filter.selectedIndex = time_filter.options.length-1 ;
+          var endTime = time_filter.options[time_filter.selectedIndex].value;    
+
+          show_ids = all_ids
+          show_ids = show_ids.slice(startTime, parseInt(endTime)+1)
+
+          drawRing();
+        }
+      }
+
+      time_filter.onchange = function(){
+        var startTime = sub_filter.options[sub_filter.selectedIndex].value;
+        var endTime = time_filter.options[time_filter.selectedIndex].value;
+
+        show_ids = all_ids
+        show_ids = show_ids.slice(startTime, parseInt(endTime)+1)
+        
+        drawRing();
+      }
+    }
+
+    
     drawRing();
   }
 
   function drawRing(){
     clearView();
-
-    console.log("draw ring");
 
     var arc = d3.arc()
       .outerRadius(200)
@@ -163,26 +259,20 @@
       .append("g")
       .attr("class", "rings")
       .on('click', function(d,i) {
-        console.log("ring click");
 
         if(wait){
-          console.log("click twice");
           clearTimeout(wait);
           wait = null;
           if(show_ids.length > 1){
               show_ids = show_ids.slice(i,i+1);
-              console.log(show_ids.length);
             }else{
-              console.log("not slice");
               show_ids = all_ids;
           }
           drawRing();
         }else{
           wait = setTimeout(function(){
-          console.log("click once");
           if(show_ids.length > 1){
             show_ids.splice(i,1);
-            console.log(show_ids);
           }else{
               show_ids = all_ids;
           }
@@ -227,7 +317,6 @@
   var linePoint = "";
 
   function drawBubbles(){
-    console.log("draw bubble");
 
     bubbles = svg.selectAll(".bubbles")
       .data(JAN_array)
@@ -251,12 +340,10 @@
             case "URL":
               var sentLink = encodeURIComponent(d.link)
               call_python("showJansUrl", sentLink)
-              console.log(sentLink);
             break;
             case "PDF":
             case "pdf":
               call_python("showJansPdf", d.title)
-              console.log(d.title);
             break;
           }
 
