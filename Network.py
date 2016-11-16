@@ -267,7 +267,10 @@ class network (threading.Thread):
         self.saveToFile()
         
     def deleteNetworkBase(self,networkBase):
-        pass
+        if networkBase == "Default":
+            return
+        #delete base!
+            
     def getNetworkBases(self):
         networkBases = list()
         path = os.path.dirname(os.path.abspath(__file__));
@@ -284,7 +287,7 @@ class network (threading.Thread):
         print("JSON search thread started")
         while self.loadingFlag:
             #print("searching for jsons")
-            files = glob.glob(path + "/marked_up_jan/*.jan")
+            files = glob.glob(path + "marked_up_jan/*.jan")
             #print(files)
             for eachfile in files:
                 try:
