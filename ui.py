@@ -18,6 +18,7 @@ import uuid
 
 from file_utils import F
 from jan import JAN
+from webcawler import *
 
 class UI:
     def __init__ (self, kad, file):
@@ -43,6 +44,7 @@ class UI:
         start_iter = self.jan_editor_buffer.get_start_iter()
         end_iter = self.jan_editor_buffer.get_end_iter()
         return self.jan_editor_buffer.get_text(start_iter, end_iter, True)
+
 
     def prepare(self):
         self.window = self.builder.get_object("main_window")
@@ -112,7 +114,7 @@ class UI:
 
         self.jan_scroll_window.hide()
         self.open_uri("http://scholar.google.com/")
-        
+
         self.cbox = self.builder.get_object("janbase_selection_box")
         self.model = Gtk.ListStore(str)
         self.cbox.set_model(self.model)        
@@ -134,8 +136,6 @@ class UI:
         self.cell2 = Gtk.CellRendererText()
         self.cbox_janbase2.pack_start(self.cell2, False)
         self.cbox_janbase2.add_attribute(self.cell2, 'text',0)
-        
-        
         
         
     def populate_selection_box(self):        
@@ -169,8 +169,15 @@ class UI:
     # begin signal handlers
 
     def settings_button_clicked(self, *args):
+	print 'OK1'
         self.settings_dialog = self.builder.get_object("settings_dialog")
         self.settings_dialog.run()
+
+    def Search_button_clicked(self, *args):
+	Keyword_entry = self.builder.get_object("Keyword_entry")
+	keyword = Keyword_entry.get_text()
+	webcawler(keyword)
+	
 
     def settings_save_button_clicked(self, *args):
         self.settings_dialog.hide()
@@ -364,6 +371,5 @@ class UI:
                 jan.add_metadata('page title', self.browser_view.get_title())
             jan.add_new()
             self.knowledge_location_entry_activate(False)
-    
     def janbase_cancel_button_clicked(self, *args):
         self.builder.get_object("janbase_reusable_dialog").hide()
