@@ -279,7 +279,6 @@ class UI:
         self.builder.get_object("combo_box2_label").set_label("into")
         
         self.cbox = self.builder.get_object("combo_box1_janbase")
-        print(self.cbox)
         self.model = self.cbox.get_model()
         self.model.clear()
         self.cbox2 = self.builder.get_object("combo_box2_janbase")
@@ -297,11 +296,12 @@ class UI:
     def merge_janbase(self,*args):
         janbase_merge_target = self.builder.get_object("combo_box1_janbase").get_active()
         janbase_to_merge = self.builder.get_object("combo_box2_janbase").get_active()
-        
+        janbase_model_target = self.builder.get_object("combo_box1_janbase").get_model()
+        janbase_model_tomerge = self.builder.get_object("combo_box2_janbase").get_model()        
         if janbase_merge_target == janbase_to_merge or janbase_merge_target == "" or janbase_to_merge =="":
             pass #error message
         else:
-            self.kad.merge_janbases(janbase_merge_target,janbase_to_merge)
+            self.kad.merge_janbases(janbase_model_target[janbase_merge_target],janbase_model_tomerge[janbase_to_merge])
             self.builder.get_object("janbase_reusable_dialog").hide()
             
     def create_janbase(self, *args):
