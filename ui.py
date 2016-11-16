@@ -16,16 +16,18 @@ import re
 import os
 import uuid
 
+from visual import V
 from file_utils import F
 from jan import JAN
 from webcawler import *
-
+from webcawler2 import *
 class UI:
     def __init__ (self, kad, file):
         self.kad= kad
         self.builder = Gtk.Builder()
         self.builder.add_from_file(file)
         self.builder.connect_signals(self)
+        self.V = V(self)
 
     def main(self):
         Gtk.main()
@@ -102,7 +104,7 @@ class UI:
         self.visualizer_view.get_settings().set_enable_developer_extras(True)
         self.visualizer_viewport.add(self.visualizer_view)
         self.visualizer_view.get_context().get_security_manager().register_uri_scheme_as_cors_enabled("python")
-        self.visualizer_view.get_context().register_uri_scheme("python", self.kad.visualizer_request, None, None)
+        self.visualizer_view.get_context().register_uri_scheme("python", self.V.visualizer_request, None, None)
         self.visualizer_view.load_uri(F.uri_from_path("visualize.html"))
 
         # file open dialog
@@ -176,8 +178,20 @@ class UI:
     def Search_button_clicked(self, *args):
 	Keyword_entry = self.builder.get_object("Keyword_entry")
 	keyword = Keyword_entry.get_text()
-	webcawler(keyword)
-	
+	Pagenum_entry = self.builder.get_object("Pagenum_entry")
+	pagenum = Pagenum_entry.get_text()
+	Year_entry = self.builder.get_object("Year_entry")
+	year = Year_entry.get_text()
+	webcawler(keyword,pagenum,year)
+
+    def Search_button1_clicked(self, *args):
+	Keyword_entry = self.builder.get_object("Keyword_entry")
+	keyword = Keyword_entry.get_text()
+	Pagenum_entry = self.builder.get_object("Pagenum_entry")
+	pagenum = Pagenum_entry.get_text()
+	Year_entry = self.builder.get_object("Year_entry")
+	year = Year_entry.get_text()
+	webcawler2(keyword,pagenum,year)
 
     def settings_save_button_clicked(self, *args):
         self.settings_dialog.hide()
@@ -212,6 +226,7 @@ class UI:
         download.connect("finished", self.download_finished)
 
     def download_finished(self, download):
+        response = download.get_response();
         status = download.get_response().get_status_code()
         if status == 200:
             uri = download.get_destination()
