@@ -31,3 +31,9 @@ class F:
     @staticmethod
     def file_exists(filename):
         return os.path.isfile(filename)
+
+    @staticmethod
+    def json_from_file(filename):
+        with open(filename,'r') as content_file:
+            content = content_file.read()
+        return content

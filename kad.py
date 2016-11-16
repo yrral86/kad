@@ -74,15 +74,8 @@ class KAD:
         self.G.stopLoading()
 
     # javascript bridge functions
-
-    def visualizer_request(self, request, *args):
-        eval("self." + request.get_path())
-
-    def trigger_update(self, thing):
-       self.js_function("update", {'test': "stuff", 'things': ['one', 2, {'name': "iii"}], "from_js": thing})
-
     def js_function(self, function, param):
-        self.ui.visualizer_view.run_javascript(function + "(" + json.dumps(param) + ")", None, None)
+        self.ui.visualizer_view.run_javascript(function +"(" + json.dumps(param) + ")", None, None)
     
     def get_janbases(self):
         return self.G.getNetworkBases()
@@ -95,5 +88,6 @@ class KAD:
     def merge_janbases(self, base1, base2):
         self.G.mergeNetworks(base1,base2)
         
+
 kad = KAD()
 kad.main(sys.argv)
