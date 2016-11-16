@@ -1,22 +1,624 @@
 <html>
-    <head>
-      <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-      <script>
-        function call_python(method, param) {
-            $.get("python:" + method + "(" + JSON.stringify(param) + ")")
+<head>
+  <meta charset="UTF-8">
+  <title>PKaM</title>
+  <!-- APP js -->
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <!-- add d3 from web -->
+  <script src="https://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+  <style>
+
+    table{
+        border-style: solid;
+        border-width: 0px;
+        border-collapse: collapse;
+        margin-left:auto; 
+        margin-right:auto;
+    }
+
+    td{
+        border-style: solid;
+        border-width: 0px;
+        vertical-align: top;
+        border-collapse: collapse;
+        margin-left:auto; 
+        margin-right:auto;
+    }
+
+    body {
+        font-family: "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 12px;
+    }
+
+    text {
+        fill: black;
+        text-anchor: middle;
+    }
+    
+   
+  </style>
+  
+<body onresize="changeWindowSize()">
+  <table>
+    <tr>
+      <td style="height:40px">
+        <input style="margin-top:5px" type="text" id="target">
+        <button style="margin-top:5px" type="button" onClick="sendTarget()">Submit!</button>
+      </td>
+    </tr>
+    <tr>
+      <td >
+        <div style="text-align:left">
+          <label id= "filter_label">Filter: <select id="flt_ctg"></select> <select id="flt_sub"></select><label> 
+          <label id= "time_filter_label">~<select id="flt_sub2"></select></label> <hr> 
+        </div>
+        <div>
+          <svg id="panel">
+          </svg>
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+  <script>
+  var windowsLength = Math.min(document.body.clientWidth,document.body.clientHeight)-50
+
+  var color = d3.scaleOrdinal(d3.schemeCategory20);
+  var linecolor = d3.scaleOrdinal(d3.schemeCategory10);
+
+  var JAN_array = []; //all the Jans
+  var keyword_array = [];//save the keywords of each jan, example: "fun":"uuid3,uuid4"
+  var all_ids = []; // restore all the ids of the category
+  var show_ids = [];// the ids we want to shows
+
+  var startAngle = [];
+  var endAngle = [];
+  var circleAttr = []; // [[length, angle, ctime_filter_labelolor, visible]]
+
+  var filter_label = document.getElementById("filter_label")
+  filter_label.style.visibility = "hidden"
+  var filter = document.getElementById("flt_ctg");
+  var sub_filter = document.getElementById("flt_sub");
+  sub_filter.style.visibility = "hidden"
+  var time_lable = document.getElementById("time_filter_label");
+  time_lable.style.visibility = "hidden"
+  var time_filter = document.getElementById("flt_sub2");
+
+  var svg = d3.select("#panel")
+    .attr("width", windowsLength)
+    .attr("height", windowsLength)
+    .attr("viewBox", "-250 -250 500 500")
+    ;
+
+  var rings;
+  var lines;
+  var bubbles;
+
+
+  function changeWindowSize(){
+    windowsLength = Math.min(document.body.clientWidth,document.body.clientHeight)-80
+    svg = d3.select("#panel")
+    .attr("width", windowsLength)
+    .attr("height", windowsLength)
+    .attr("viewBox", "-250 -250 500 500")
+
+  }
+
+  function call_python(method, param) {
+      $.get("python:" + method + "(" + JSON.stringify(param) + ")")
+  }
+
+  function sendTarget() {
+    var keyword = document.getElementById("target").value; 
+    call_python("getJansFromKeyword", keyword);
+  }
+
+  function getJansFromKeyword(jan){
+
+    JAN_array = JSON.parse(jan);
+    getCategory(["time","author","type"]);
+
+
+  }
+
+  function getCategory(category){
+
+    filter_label.style.visibility = "visible"
+
+    while(filter.firstChild){
+      filter.removeChild(filter.firstChild);
+    }
+
+    for(var i = 0 ; i < category.length; i++){
+      var opt = document.createElement("option");
+      opt.setAttribute("value", category[i]);
+      var opt_show = document.createTextNode(category[i]);
+      opt.appendChild(opt_show);
+      filter.appendChild(opt);
+    }
+    
+    call_python("getIdsFromCategory", filter.options[0].value);
+
+    filter.onchange = function(){
+      call_python("getIdsFromCategory", filter.options[filter.selectedIndex].value);
+    }
+
+  }
+
+  function getIdsFromCategory(ids){
+    all_ids = JSON.parse(ids);
+    show_ids = JSON.parse(ids);
+
+    sub_filter.style.visibility = "visible"
+
+    while(sub_filter.firstChild){
+      sub_filter.removeChild(sub_filter.firstChild);
+    }
+
+    if(filter.options[filter.selectedIndex].value != "time"){
+      time_lable.style.visibility = "hidden"
+
+      var opt = document.createElement("option");
+      opt.setAttribute("value", "all");
+      var opt_show = document.createTextNode("all");
+      opt.appendChild(opt_show);
+      sub_filter.appendChild(opt);
+
+      for(var i = 0; i < all_ids.length; i++){
+        var opt = document.createElement("option");
+        opt.setAttribute("value", i);
+        var opt_show = document.createTextNode(all_ids[i].name);
+        opt.appendChild(opt_show);
+        sub_filter.appendChild(opt);
+      }
+
+      sub_filter.onchange = function(){
+        var selectedOption = sub_filter.options[sub_filter.selectedIndex].value;
+        if(selectedOption == "all"){
+          show_ids = all_ids;
+        }else{
+          show_ids = all_ids;
+          show_ids = show_ids.slice(selectedOption,(parseInt(selectedOption)+1));
+        }
+        drawRing();
+      }
+    }else{
+      var opt = document.createElement("option");
+      opt.setAttribute("value", "all");
+      var opt_show = document.createTextNode("all");
+      opt.appendChild(opt_show);
+      sub_filter.appendChild(opt);
+
+      for(var i = 0; i < all_ids.length; i++){
+        var opt = document.createElement("option");
+        opt.setAttribute("value", i);
+        var opt_show = document.createTextNode(all_ids[i].name);
+        opt.appendChild(opt_show);
+        sub_filter.appendChild(opt);
+      }
+
+      sub_filter.onchange = function(){
+        var startTime = sub_filter.options[sub_filter.selectedIndex].value;
+        if(startTime == "all"){
+          time_lable.style.visibility = "hidden"
+          show_ids = all_ids
+        }else{
+          time_lable.style.visibility = "visible"
+
+          for(var i = startTime; i < all_ids.length; i++){
+            var opt = document.createElement("option");
+            opt.setAttribute("value", i);
+            var opt_show = document.createTextNode(all_ids[i].name);
+            opt.appendChild(opt_show);
+            time_filter.appendChild(opt);
+          }
+
+          time_filter.selectedIndex = time_filter.options.length-1 ;
+          var endTime = time_filter.options[time_filter.selectedIndex].value;    
+
+          show_ids = all_ids
+          show_ids = show_ids.slice(startTime, parseInt(endTime)+1)
+
+          drawRing();
+        }
+      }
+
+      time_filter.onchange = function(){
+        var startTime = sub_filter.options[sub_filter.selectedIndex].value;
+        var endTime = time_filter.options[time_filter.selectedIndex].value;
+
+        show_ids = all_ids
+        show_ids = show_ids.slice(startTime, parseInt(endTime)+1)
+        
+        drawRing();
+      }
+    }
+
+    
+    drawRing();
+  }
+
+  function drawRing(){
+    clearView();
+
+    var arc = d3.arc()
+      .outerRadius(200)
+      .innerRadius(185);
+
+    var pie = d3.pie()
+      .sort(null)
+      .value(function(d){return d.value;});
+
+    var wait;
+
+    lines = svg.selectAll(".lines");
+
+    rings = svg.selectAll(".rings")
+      .data(pie(show_ids))
+      .enter()
+      .append("g")
+      .attr("class", "rings")
+      .on('click', function(d,i) {
+
+        if(wait){
+          clearTimeout(wait);
+          wait = null;
+          if(show_ids.length > 1){
+              show_ids = show_ids.slice(i,i+1);
+            }else{
+              show_ids = all_ids;
+          }
+          drawRing();
+        }else{
+          wait = setTimeout(function(){
+          if(show_ids.length > 1){
+            show_ids.splice(i,1);
+          }else{
+              show_ids = all_ids;
+          }
+          drawRing();
+          wait = null;
+          },500);
+        }
+        
+      });
+
+    rings.append("path")
+      .attr("d", arc)
+      .attr("fill", function(d,i){
+        startAngle[i] = d.startAngle;
+        endAngle[i] = d.endAngle;
+        return color(i);
+      });
+
+    rings.append("text")
+      .attr("x", function(d,i){
+        return getXpoint(192.5,(startAngle[i] + endAngle[i] -Math.PI)/2 );
+      })
+      .attr("y", function(d,i){
+        return getYpoint(192.5,(startAngle[i] + endAngle[i] -Math.PI)/2 );
+      })
+      .text(function(d,i){
+        if(d.data.name.length > 4){
+          return d.data.name.substring(0,4);
+        }
+        return d.data.name;
+      });
+    rings.append("title")
+      .text(function(d){
+        return d.data.name;
+      })
+
+
+      drawBubbles();
+  }
+
+  var isShownLine = false;
+  var linePoint = "";
+
+  function drawBubbles(){
+
+    bubbles = svg.selectAll(".bubbles")
+      .data(JAN_array)
+      .enter()
+      .append("g")
+      .attr("class", "bubbles")
+      .on("click", function(d,i){
+
+        svg.selectAll("line").remove();
+        svg.selectAll(".lines").remove();
+
+        if(d.uuid == linePoint && isShownLine){
+
+          linePoint = "";
+          isShownLine = false;
+        }else{
+
+          //shows Jans' Url
+          switch (d.type){
+            case "url":
+            case "URL":
+              var sentLink = encodeURIComponent(d.link)
+              call_python("showJansUrl", sentLink)
+            break;
+            case "PDF":
+            case "pdf":
+              call_python("showJansPdf", d.title)
+            break;
+          }
+
+          //shows keywords lines between Jans
+          for(var j= 0 ; j < circleAttr.length; j++){
+           if(d.uuid == circleAttr[j].uuid){
+             var x1 =  getXpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+             var y1 =  getYpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+
+              break;
+            }
+          }
+
+          for(var j = 0; j < d.keywords.length; j++){
+          for(var k = 0; k < keyword_array.length; k++){
+            
+            if(d.keywords[j] == keyword_array[k].name){
+                
+              for(var l = 0; l < keyword_array[k].uuid.length; l++){
+                var x2 = 0,y2 = 0;
+                if(d.uuid != keyword_array[k].uuid[l]){
+
+                  for(var m= 0 ; m < circleAttr.length; m++){
+                    if(keyword_array[k].uuid[l] == circleAttr[m].uuid){
+                     x2 =  getXpoint(circleAttr[m].c_length, circleAttr[m].c_angle);
+                     y2 =  getYpoint(circleAttr[m].c_length, circleAttr[m].c_angle);
+                      break;
+                    }
+                  }
+
+                  if(x2 != 0 && y2 != 0){
+
+                  var keyword_line = lines.data([0])
+                    .enter()
+                    .append("g")
+                    .attr("class", "lines");
+
+
+                  keyword_line.append("line")
+                    .attr("x1",x1)
+                    .attr("y1",y1)
+                    .attr("x2",x2)
+                    .attr("y2",y2)
+                    .attr("stroke-width",2)
+                    .style("opacity",0.5)
+                    .attr("stroke",linecolor(j));
+
+                  keyword_line.append("title")
+                    .text(function(){return "keyword:" + d.keywords[j]});
+                  }
+
+
+                  isShownLine = true;
+                  linePoint = d.uuid;
+                }
+              }
+              break;
+            }
+
+          }
+        }
         }
 
-        function trigger() {
-            call_python("trigger_update", "author")
+        
+      });
+
+    bubbles.append("circle")
+      .attr("id", function(d,i){
+        var circleId;
+        switch( filter.options[filter.selectedIndex].value ){
+          case "type":
+            circleId = d.type;
+          break;
+          case "author":
+            circleId = d.author;
+          break;
+          case "time":
+            circleId = d.time;
         }
 
-        function update(text) {
-            document.querySelector("#fromPython").innerHTML = JSON.stringify(text)
+        var isShown = false;
+
+        for(var j = 0; j < show_ids.length; j++){
+          if(circleId == show_ids[j].name){
+            isShown = true;
+            var position = givePosition(startAngle[j], endAngle[j]);
+            // var c_angle = Math.random() * (endAngle[j] - startAngle[j]) + startAngle[j] - Math.PI/2;
+            // var c_length = Math.random() * 155 + 15;
+            var c_angle = position[1];
+            var c_length = position[0];
+            var c_color = color(j);
+            circleAttr.push({"uuid": d.uuid, "c_length": c_length, "c_angle": c_angle ,"c_color": c_color, "visible": 1});
+            break;
+          }
         }
-      </script>
-    </head>
-    <body>
-      <div id="fromPython">initial load, waiting for python to call update()</div>
-      <input onclick="trigger();" type="button" value="update"></input>
-    </body>
+        if(!isShown){
+          circleAttr.push({"uuid": d.uuid, "c_length": 0, "c_angle": 0,"c_color": "#FFF", "visible": 0});
+        }
+
+        for(var j = 0; j < d.keywords.length; j++ ){
+          var isInArray = false;
+          for(var k = 0; k < keyword_array.length; k++){
+            if(d.keywords[j] == keyword_array[k].name){
+              isInArray = true;
+              keyword_array[k].uuid.push(d.uuid);
+              break;
+            }
+          }
+          if(!isInArray){
+            keyword_array.push({"name":d.keywords[j], "uuid":[d.uuid]});
+          }
+        }
+        
+
+        return d.uuid;
+      })
+      .attr("r", 10)
+      .style("opacity",0.5)
+      .style("visibility", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            if(circleAttr[j].visible == 0){
+              return "hidden";
+            }else{
+              return "visible";
+            }
+            break;
+          }
+        }
+
+      })
+      .style("fill", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return circleAttr[j].c_color;
+            break;
+          }
+        }
+      })
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .transition()
+      .duration(1000)
+      .attr("cx", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return getXpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+            break;
+          }
+        }
+      })
+      .attr("cy", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return getYpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+            break;
+          }
+        }
+      });
+
+    bubbles.append("text")
+      .style("visibility", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            if(circleAttr[j].visible == 0){
+              return "hidden";
+            }else{
+              return "visible";
+            }
+            break;
+          }
+        }
+
+      })
+      .style("fill", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return circleAttr[j].c_color;
+            break;
+          }
+        }
+      })
+      .attr("font-size", 14)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("alignment-baseline", "middle")
+      .text(function(d,i){
+        return d.uuid;
+      })
+      .attr("x", 0)
+      .attr("y", 0)
+      .transition()
+      .duration(1000)
+      .attr("x", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return getXpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+            break;
+          }
+        }
+
+      })
+      .attr("y", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            return getYpoint(circleAttr[j].c_length, circleAttr[j].c_angle);
+            break;
+          }
+        }
+      });
+
+      bubbles.append("title")
+      .text(function(d){
+        return d.uuid
+      })
+      .style("visibility", function(d,i){
+        for(var j= 0 ; j < circleAttr.length; j++){
+          if(d.uuid == circleAttr[j].uuid){
+            if(circleAttr[j].visible == 0){
+              return "hidden";
+            }else{
+              return "visible";
+            }
+            break;
+          }
+        }
+
+      });
+
+  }
+
+  function getXpoint(length, angle){
+    return length * Math.cos(angle);
+  }
+
+  function getYpoint(length, angle){
+    return length * Math.sin(angle);
+  }
+
+  function dist(l1, l2, a1, a2) {
+    return Math.sqrt(Math.pow(l1, 2) + Math.pow(l2, 2) - 2 * l1 * l2 * Math.cos(a2 - a1));
+  }
+
+  function givePosition(sa, ea){
+    var c_angle = Math.random() * (ea - sa) + sa - Math.PI/2;
+    var c_length = Math.random() * 155 + 15;
+
+    for(var l = 0; l < circleAttr.length; l++){
+      if(dist(c_length, circleAttr[l].c_length, c_angle, circleAttr[l].c_angle) < 20){
+
+        var tmp_position = givePosition(sa,ea);
+        c_angle = tmp_position[1];
+        c_length = tmp_position[0];
+      }
+    }
+
+    return [c_length, c_angle];
+}
+
+  function clearView(){
+    svg.selectAll(".rings").remove();
+    svg.selectAll(".bubbles").remove();
+    svg.selectAll(".lines").remove();
+    svg.selectAll("path").remove();
+    svg.selectAll("text").remove();
+    svg.selectAll("rect").remove();
+    svg.selectAll("circle").remove();
+    svg.selectAll("title").remove();
+    svg.selectAll("line").remove();
+    keyword_array = [];
+    circleAttr = [];
+
+  }
+    
+  </script>
+  
+</head>
 </html>
