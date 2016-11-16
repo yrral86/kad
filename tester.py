@@ -10,8 +10,12 @@ G.begin()
 #G.saveToFile()
 
 list = G.getNetworkBases();
-print(list)
-"""
+print(list[2])
+G.loadNetworkBase(list[2])
+y=G.getKeywordCategories()
+print(y)
+
+
 categoryList = G.getCategories()  #returns a list of strings
 
 for x in categoryList:      #this loop runs through all categories and prints all IDs associated
@@ -19,7 +23,7 @@ for x in categoryList:      #this loop runs through all categories and prints al
     for z in y:
         print("List for " + x + ": " + z)
 print("\n")
-"""
+
 """
 y=G.getKeywordCategories()
 print(y)
