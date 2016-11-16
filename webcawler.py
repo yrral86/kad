@@ -1,3 +1,6 @@
+from config import Config
+from file_utils import F
+
 def webcawler(keyword,pagenum,year):
     print keyword
     import os
@@ -10,7 +13,8 @@ def webcawler(keyword,pagenum,year):
     inputElement.submit()
     currentURL=driver.current_url
     urlList=[]
-    localDir = 'pdf/'
+    localDir = Config.current_janbase_dir() + 'pdf/'
+    F.ensure_directory(localDir)
     fileOut = localDir + keyword + ".txt"
     import urllib, re,codecs,sys
     fileOp = codecs.open(fileOut, 'a', sys.getdefaultencoding())
@@ -39,12 +43,14 @@ def webcawler(keyword,pagenum,year):
 
     for everyURL in urlList:
             wordItems = everyURL.split('/')
+            PDFName = None
             for item in wordItems:
                     if re.match('.*\.pdf$', item):
                             PDFName = item
-            localPDF = localDir +keyword+"_"+ PDFName
-            try:
-                    urllib.urlretrieve(everyURL, localPDF)
-            except Exception,e:
-                    continue
+            if PDFName != None:
+                localPDF = localDir +keyword+"_"+ PDFName
+                try:
+                        urllib.urlretrieve(everyURL, localPDF)
+                except Exception,e:
+                        continue
 
