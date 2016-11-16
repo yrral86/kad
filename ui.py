@@ -319,22 +319,25 @@ class UI:
         
     def load_janbase(self,*args):
         if self.builder.get_object("combo_box1_janbase").get_active() != "":
-            self.kad.load_janbase(self.builder.getobject("combo_box1_janbase").get_active())
+            model = self.builder.get_object("combo_box1_janbase").get_model()
+            index = self.builder.get_object("combo_box1_janbase").get_active()
+            self.kad.load_janbase(model[index][0])
             self.builder.get_object("janbase_reusable_dialog").hide()
         
     def load_janbase_clicked(self, *args):
         self.builder.get_object("janbase_reusable_dialog").show()
-        self.builder.get_object("Select Janbase").show()
+        self.builder.get_object("combo_box1_label").show()
         self.builder.get_object("combo_box2_label").hide()
         self.builder.get_object("combo_box1_janbase").show()
         self.builder.get_object("combo_box2_janbase").hide()
         self.builder.get_object("text_box1_label").hide()
         self.builder.get_object("text_box1").hide()
-        self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
+        self.builder.get_object("combo_box1_label").set_label("Select Janbase")
+        self.builder.get_object("combo_box_action_label").set_label("Load Janbase")
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("load")
         action_button.connect("clicked",self.load_janbase,None)
-        janbase_list = self.builder.get_object("combo_box1_janbase").getModel()
+        janbase_list = self.builder.get_object("combo_box1_janbase").get_model()
         janbase_list.clear()
         for janbases in self.kad.get_janbases():
             janbase_list.append([janbases])

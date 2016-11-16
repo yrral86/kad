@@ -57,7 +57,7 @@ class network (threading.Thread):
                         
                         self.janGraph.add_edge(janjson["uuid"], "Meta:" + dictList["value"])
                         
-                
+        print(self.janCategoryList)     
     def getJansFromKeyword(self, keyword):
         try:
             neighborlist = netx.all_neighbors(self.janGraph, "Meta:"+keyword)
@@ -156,7 +156,7 @@ class network (threading.Thread):
                 keyz = self.janDict.keys();
                 for key in keyz:
                     janHandle.write(key + "||" + json.dumps(self.janDict[key]) + "\n")
-            
+            print("data saved")
         except:
             print("error writing network data")
             traceback.print_exc()
@@ -167,7 +167,14 @@ class network (threading.Thread):
                 path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName + "/"
             else:
                 path = os.path.dirname(os.path.abspath(__file__)) + "/data/Default/" 
-                
+            print(path)
+            
+            self.janDict = {}
+            self.janKeywordList = []
+            self.janCategoryList = []
+            self.janIDs = []
+            self.janMetaList = []            
+            
             self.currentBase = path  #saves current path for later access
             self.janGraph = netx.read_gpickle(path+"network")
             with open(path+"lists.dat", 'r') as handle:
@@ -184,15 +191,13 @@ class network (threading.Thread):
                 for line in janHandle:                                 
                     fields = line.split("||")
                     self.janDict[fields[0]] = json.loads(fields[1].strip())
-            #x1 = self.janDict.keys();
-            #for x in x1:
-                #print(self.janDict[x])
+            print(baseName)
         except:
             print("error reading network datafile or file missing")
-            #traceback.print_exc()
+            traceback.print_exc()
     def clearMarkupFolder(self):
-        path = os.path.dirname(os.path.abspath(__file__));
-        files = glob.glob(path + "/marked_up_jan/*.jan")
+        path = self.currentBase;
+        files = glob.glob(path + "marked_up_jan/*.jan")
         for eachFile in files:
             os.remove(eachFile)
             print(eachFile + " processed & deleted")
@@ -292,9 +297,10 @@ class network (threading.Thread):
                                 print("error loading jan")
                                 traceback.print_exc()
                         handle.close();
+
                 except:
                     print("Error reading in from marked_up_jans")
-            self.startFlag = True
             self.saveToFile()
+            self.startFlag = True
             self.clearMarkupFolder()
             time.sleep(10)
