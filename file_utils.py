@@ -37,3 +37,8 @@ class F:
         with open(filename,'r') as content_file:
             content = content_file.read()
         return content
+
+    @staticmethod
+    def ensure_directory(directory):
+        if not(os.path.isdir(directory)):
+            os.makedirs(directory)

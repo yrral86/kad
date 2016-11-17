@@ -3,8 +3,12 @@ import os
 import threading
 import time
 
+from config import Config
+from file_utils import F
+
 class DirWatcher(threading.Thread):
-    def __init__(self, directory, responder):
+    def __init__(self, extension, directory, responder):
+        self.extension = extension
         self.directory = directory
         self.responder = responder
         self.stop = False
@@ -12,9 +16,10 @@ class DirWatcher(threading.Thread):
         self.daemon = True
 
     def run(self):
-        path = os.path.abspath(self.directory)
         while not(self.stop):
-            files = glob.glob(path + "/*.jan")
+            path = os.path.abspath(Config.current_janbase_dir() + self.directory)
+            F.ensure_directory(path)
+            files = glob.glob(path + "/*." + self.extension)
             for file in files:
                 if self.responder != None:
                     self.responder.new_file(file)

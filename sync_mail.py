@@ -3,6 +3,7 @@ import string
 import threading
 import time
 
+from config import Config
 from file_utils import F
 from jan import JAN
 
@@ -22,7 +23,9 @@ class SyncMail(threading.Thread):
         return map(lambda x : string.split(x)[0], items)
 
     def filename_from_id(self, id):
-        return MAILBOX_DIR + "/" + id + ".mbox"
+        directory = Config.current_janbase_dir() + MAILBOX_DIR
+        F.ensure_directory(directory)
+        return directory + "/" + id + ".mbox"
 
     def sync(self):
         ids = self.get_ids()
