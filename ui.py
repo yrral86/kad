@@ -345,8 +345,8 @@ class UI:
     def load_janbase(self,*args):
         if self.builder.get_object("combo_box1_janbase").get_active() != -1:
             model = self.builder.get_object("combo_box1_janbase").get_model()
-            index = self.builder.get_object("combo_box1_janbase").get_active()
-            self.kad.load_janbase(model[index][0])
+            index = self.builder.get_object("combo_box1_janbase").get_active_iter()
+            self.kad.load_janbase(model.get(index))
             self.builder.get_object("janbase_reusable_dialog").hide()
 
     def load_janbase_clicked(self, *args):
@@ -396,9 +396,9 @@ class UI:
             self.builder.get_object("janbase_reusable_dialog").hide()        
         
     def janbase_selection_box_changed(self, *args):
-        indx = self.builder.get_object("janbase_selection_box").get_active()
+        indx = self.builder.get_object("janbase_selection_box").get_active_iter()
         modl = self.builder.get_object("janbase_selection_box").get_model()
-        self.kad.load_janbase(modl[indx])
+        self.kad.load_janbase(modl.get(indx))
 
     def settings_cancel_button_clicked(self, *args):
         self.settings_dialog.hide()

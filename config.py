@@ -1,5 +1,5 @@
 class Config:
-    current_janbase = 'default'
+    current_janbase = 'Default'
     listeners = []
 
     @classmethod
