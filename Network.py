@@ -57,8 +57,7 @@ class network (threading.Thread):
                             self.janGraph.add_edge("Meta:" + dictList["value"],"MetaField:" + dictList[meta])
                         
                         self.janGraph.add_edge(janjson["uuid"], "Meta:" + dictList["value"])
-                        
-        print(self.janCategoryList)     
+                           
     def getJansFromKeyword(self, keyword):
         try:
             neighborlist = netx.all_neighbors(self.janGraph, "Meta:"+keyword)
@@ -136,7 +135,7 @@ class network (threading.Thread):
             time.sleep(1)
 
     def saveToFile(self):
-        
+        print(self.currentBase)
         try:
             path=self.currentBase
             if not os.path.exists(path):
@@ -164,12 +163,9 @@ class network (threading.Thread):
             
     def loadFromFile(self,baseName):
         try:
-            if baseName:
-                path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName + "/"
-            else:
-                path = os.path.dirname(os.path.abspath(__file__)) + "/data/Default/" 
-            print(path)
-            
+            print(baseName)
+            path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName + "/"
+                  
             self.janDict = {}
             self.janKeywordList = []
             self.janCategoryList = []
@@ -282,7 +278,7 @@ class network (threading.Thread):
         return networkBases
         
     def run(self):
-        self.loadFromFile(None)
+        self.loadFromFile("Default")
         path = self.currentBase;
         print("JSON search thread started")
         while self.loadingFlag:
