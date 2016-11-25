@@ -345,6 +345,10 @@
             case "pdf":
               call_python("showJansPdf", d.title)
             break;
+            case "PIC":
+            case "pic":
+              call_python("showJansPic", d.link)
+            break;
           }
 
           //shows keywords lines between Jans

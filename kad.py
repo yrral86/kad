@@ -7,6 +7,7 @@ import sys
 import Network
 
 from dir_watcher import DirWatcher
+from pdf_watcher import PDFWatcher
 from file_utils import F
 from jan import JAN
 from markup import MarkUpHandler
@@ -16,7 +17,9 @@ from ui import UI
 class KAD:
     G = Network.network()
     def __init__(self):
-        self.new_watcher = DirWatcher(JAN.NewDir, MarkUpHandler)
+        self.pdf_watcher = DirWatcher("pdf", "pdf", PDFWatcher)
+        self.pdf_watcher.start()
+        self.new_watcher = DirWatcher("jan", JAN.NewDir, MarkUpHandler)
         self.new_watcher.start()
 
         self.sync_mail = SyncMail("pop.gmail.com", "houshifu1234@gmail.com", "hsf12345")
@@ -31,7 +34,7 @@ class KAD:
         # http://stackoverflow.com/questions/16410852/keyboard-interrupt-with-with-python-gtk
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.G.begin()
-        
+
     def current_uri(self):
         return F.uri_from_path(self.filename)
 
@@ -69,6 +72,7 @@ class KAD:
 
     def shutdown(self):
         self.ensure_saved()
+        self.pdf_watcher.stop = True
         self.new_watcher.stop = True
         self.sync_mail.stop = True
         self.G.stopLoading()
@@ -76,20 +80,24 @@ class KAD:
     # javascript bridge functions
     def js_function(self, function, param):
         self.ui.visualizer_view.run_javascript(function +"(" + json.dumps(param) + ")", None, None)
-    
+
     def get_janbases(self):
         return self.G.getNetworkBases()
-        
+
     def create_janbase(self, base_name):
         self.G.createNetworkBase(base_name)
     def load_janbase(self, base_name):
-        self.G.loadNetworkBase(base_name)        
-        
+        self.G.loadNetworkBase(base_name)
+
     def merge_janbases(self, base1, base2):
         self.G.mergeNetworks(base1,base2)
+<<<<<<< HEAD
         
     def delete_janbase(self, base):
         self.G.deleteNetworkBase(base)
+=======
+
+>>>>>>> 834e90c636858681aa221da4323d56f10e3e434b
 
 kad = KAD()
 kad.main(sys.argv)

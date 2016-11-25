@@ -59,7 +59,9 @@ def dump_links(url):
 
 def dump_pdf(uri):
     path = F.path_from_uri(uri)
-    return os.popen("pdftotext " + path + " -").read()
+    command = "pdftotext '" + path.replace("'", "'\\''") + "' -"
+    print command
+    return os.popen(command).read()
 
 def parse_email(uri):
     text = F.slurp(uri)
