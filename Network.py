@@ -163,7 +163,6 @@ class network (threading.Thread):
             
     def loadFromFile(self,baseName):
         try:
-            print(baseName)
             path = os.path.dirname(os.path.abspath(__file__)) + "/data/"+baseName + "/"
                   
             self.janDict = {}
@@ -188,7 +187,7 @@ class network (threading.Thread):
                 for line in janHandle:                                 
                     fields = line.split("||")
                     self.janDict[fields[0]] = json.loads(fields[1].strip())
-            print(baseName)
+            print(path)
         except:
             print("error reading network datafile or file missing")
             traceback.print_exc()
