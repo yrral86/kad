@@ -135,7 +135,6 @@ class network (threading.Thread):
             time.sleep(1)
 
     def saveToFile(self):
-        print(self.currentBase)
         try:
             path=self.currentBase
             if not os.path.exists(path):
