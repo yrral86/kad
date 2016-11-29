@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage[letterpaper,margin=1.0in]{geometry}
+\usepackage{setspace}
+\usepackage[pdftex]{graphicx}
+\begin{document}
+\title{Knowledge Advantage Desktop: Interface, Infrastructure, and Markup}
+\author{Larry Reaves}
+\maketitle
+\pagebreak
+\begin{doublespace}
+\section{Introduction}
+In modern times, we are inundated with a huge amount of information for a wide range of sources.
+While making sense of this firehose of knowledge can be quite a challenge, it is essential to be able
+to function in many of today's work environments.
+Knowledge Advantage Desktop (KAD) is a tool for discovering information, extracting meaning,
+finding connections between different pieces of information,
+and visualizing the knowledge that has been processed.
+\par
+By leveraging KAD, a knowledge worker is able to more quickly find information that is relavant to their
+work by inputing search parameters.
+After the software finds a piece of information matching the search parameters,
+it will extract important words from the text as well as other information such as the author or date of publication.
+Combined, the document and these annotations make up what we call a JAN.
+These JANs are then networked by finding common metadata such as keywords or authors.
+This network is visualized so that the user can easily move from one document to related documents.
+The network can also be searched to find a particular keyword or author.
+\par
+A group of networked JANs is called a JANBase.
+KAD supports the ability to switch between JANBases so that you can have separate networks for different topics.
+This makes it easier to find information relavent to your current work objective.
+\section{Interface}
+The KAD interface has three main sections.
+$<$insert screen capture$>$
+On the left is the Editor Pane (EP).
+The EP is intended for content production.
+It allows you to edit any text file, from programming source code to TeX markup.
+In the case of TeX markup, there is a {\it "Render"} button that will generate a PDF document.
+This PDF will be shown in the lower left pane, which we call the Knowledge Pane (KP).
+The KP will show both web sites as well as PDF documents.
+At the top of the KP is the location bar, which allows you to directly navigate to any url or PDF file.
+When browsing web sites, if a PDF link is selected, the PDF is automatically downloaded and displayed
+in the KP.
+If the current document being shown in the KP does not have an existing JAN, there will be a
+{\it "Make JAN"} button displayed.
+This button allows the user to create a JAN from the window's current contents,
+facilitating manual discovery in addtion to the automated discovery provided by the web crawler.
+Above the KP is the Visualization Pane (VP).
+The VP allows the user to visualize and search their current JANBase.
+In addition to the three main sections, there is also a bottom bar consisting of a status area,
+a JANBase selection dropdown, and a {\it "Settings"} button.
+\par
+In the settings, there are two areas: {\it "JANBase"} and {\lt "Discovery Settings"}.
+In the "JANBase" section, the user is able to Add, Load, Merge, and Delete JANBases.
+In the "Discovery Settings" the user can set up the search parameters for automatic discovery of PDF documents.
+\par
+There are several keyboard shortcuts available to simplify certain actions within KAD.
+\fbox{Control} - \fbox{O} will allow you to select a file to open in the Editor Pane.
+\fbox{Control} - \fbox{S} will save the current file in the EP.
+\fbox{Control} - \fbox{L} will focus the lation bar within the Knowledge Pane.
+\fbox{Control} - \fbox{R} can be used to reload KAD.
+This is useful if you have edited the KAD source code and want to restart the application.
+\fbox{Control} - \fbox{Q} will shutdown KAD.
+\section{Infrastructure}
+In order to tie the various parts of the application together,
+quite a few automated processes happen behind the scenes.
+Depending on which JANBase is selected, there is a folder that contains the raw JANs for newly discovered documents.
+There is a watcher thread that checks this folder for new JANs every few seconds.
+When a new JAN is found, the document is passed to the markup process.
+This process, discribed in the {\it Markup} section below, extends the new JANs with additional metadata gleaned
+from interpreting the contents.
+The marked up JAN is then placed into another folder.
+This folder is watched for changes by the network processing thread.
+This thread will connect the marked up JAN to the network for the JANBase.
+Additionally, there is another directory watcher thread that will create a new JAN any new PDFs that appear in
+the pdf folder for the current JANBase.
+Each JANBase is a separate folder, and loading a different JANBase will change the directories that are watched
+to the subdirectories within the top level directory for that JANBase. 
+\section{Markup}
+In KAD, Markup is the process of extracting metadata from discovered documents.
+The markup engine supports python files, urls, PDFs, and emails (mbox format).
+For all documents, a plain text version is extracted.
+This text is then processed to extract key words.
+\subsection{Keyword Extraction}
+
+\end{doublespace}
+\end{document}
