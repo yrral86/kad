@@ -61,6 +61,14 @@ class KAD:
         if self.ui.get_editor_text() != self.file_data:
             self.save_file()
 
+    def render_pdf(self):
+        dir = F.dir_from_uri(self.current_uri())
+        file = F.file_basename_from_uri(self.current_uri())
+        print "dir = " + dir
+        print "file = " + file
+        print os.popen("cd " + dir + "; pdflatex -interaction nonstopmode " + file).read()
+        self.ui.open_uri(F.uri_from_path(dir + "/" + file + ".pdf"))
+
     def reload_kad(self, *args):
         self.ensure_saved()
         os.execl("./kad.py", "./kad.py")
@@ -92,7 +100,7 @@ class KAD:
     def merge_janbases(self, base1, base2):
         self.G.mergeNetworks(base1,base2)
 
-        
+
     def delete_janbase(self, base):
         self.G.deleteNetworkBase(base)
 
