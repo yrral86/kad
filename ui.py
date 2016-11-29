@@ -283,6 +283,10 @@ class UI:
                 self.activate_pdf_view()
             else:
                 os.system("gnome-open " + uri)
+                jan = JAN.find_from_uri(uri)
+                if jan == None:
+                    jan = new_from_uri_and_type(uri, None)
+                    jan.add_new()
         elif ("pic/" in uri):
             self.img_view.set_from_file(uri)
             self.activate_pic_view()
