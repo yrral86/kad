@@ -212,8 +212,7 @@ class UI:
 
     def render_button_clicked(self, *args):
         self.save_editor_button_clicked()
-        print os.popen("cd example_tex; pdflatex paper").read()
-        self.open_uri(F.uri_from_path("example_tex/paper.pdf"))
+        self.kad.render_pdf()
 
     def save_editor_button_clicked(self, *args):
         self.kad.save_file()
@@ -396,7 +395,7 @@ class UI:
         self.builder.get_object("combo_box1_janbase").show()
         self.builder.get_object("combo_box2_janbase").hide()
         self.builder.get_object("combo_box1_label").set_label("Select Janbase to Delete")
-        self.builder.get_object("text_box1_label").hide()        
+        self.builder.get_object("text_box1_label").hide()
         self.builder.get_object("text_box1").hide()
         self.builder.get_object("combo_box_action_label").set_label("Delete Janbase")
         action_button = self.builder.get_object("janbase_action_button")
@@ -408,14 +407,14 @@ class UI:
         for janbases in self.kad.get_janbases():
             janbase_list.append([janbases])
         janbase_list.active = 0
-        
+
     def delete_janbase(self, *args):
         if self.builder.get_object("combo_box1_janbase").get_active() != -1:
             model = self.builder.get_object("combo_box1_janbase").get_model()
             index = self.builder.get_object("combo_box1_janbase").get_active()
             self.kad.delete_janbase(model[index][0])
-            self.builder.get_object("janbase_reusable_dialog").hide()        
-        
+            self.builder.get_object("janbase_reusable_dialog").hide()
+
     def janbase_selection_box_changed(self, *args):
         indx = self.builder.get_object("janbase_selection_box").get_active()
         modl = self.builder.get_object("janbase_selection_box").get_model()

@@ -42,3 +42,11 @@ class F:
     def ensure_directory(directory):
         if not(os.path.isdir(directory)):
             os.makedirs(directory)
+
+    @staticmethod
+    def dir_from_uri(uri):
+        return os.path.dirname(F.path_from_uri(uri))
+
+    @staticmethod
+    def file_basename_from_uri(uri):
+        return os.path.basename(re.sub("(.*)\.(.*)", "\g<1>", F.path_from_uri(uri)))
