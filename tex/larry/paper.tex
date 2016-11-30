@@ -48,6 +48,9 @@ facilitating manual discovery in addition to the automated discovery provided by
 \par
 Above the KP is the Visualization Pane (VP).
 The VP allows the user to visualize and search their current JANBase.
+The user can select documents in the VP to view.
+PDF and URL documents will be displayed in the KP.
+Other types of documents will be opened in the appropriate application.
 In addition to the three main sections, there is also a bottom bar consisting of a status area,
 a JANBase selection dropdown, and a {\it "Settings"} button.
 \par
@@ -76,6 +79,7 @@ This folder is watched for changes by the network processing thread.
 This thread will connect the marked up JAN to the network for the JANBase.
 Additionally, there is another directory watcher thread that will create a new JAN any new PDFs that appear in
 the PDF folder for the current JANBase.
+One final thread is responsible for monitoring an email account for new mails which are downloaded and fed into the new JAN process.
 Each JANBase is a separate folder, and loading a different JANBase will change the directories that are watched
 to the subdirectories within the top level directory for that JANBase. 
 \section{Markup}
