@@ -99,5 +99,14 @@ The top 20 words from each document are added to the JAN as "keyword" metadata f
 In addition to the text analysis, other metadata is added depending on the file type.
 For URL types, links are extracted and added as "link" metadata.
 For email types, "from", "author", "subject", and "date" metadata are added to the JAN based on the headers provided.
+\par
+As future work, there are a few things that could be done to improve the markup process beyond simple frequency analysis.
+In addition to more advanced word and phrase frequency analysis techniques,
+there is likely room to leverage deep learning models in order to intelligently parse unstructured data.
+For example, the problem of identifying the authors and extracting the abstract from an arbitrary PDF file is quite difficult.
+Beyond the high level classification of separating book chapters from journal articles and theses and dissertations, there are a multitude of possible formats
+that would make a heuristics based approach very quickly become untenable.
+Depending on the target domain, there will be different pieces of relevant information that can be extracted given enough examples.
+Ideally, it would be possible to create a generic tool that could be trained for whatever domain you wanted to apply it to.
 \end{doublespace}
 \end{document}
