@@ -142,6 +142,7 @@ class network (threading.Thread):
             if not os.path.exists(path+"new_jan"):
                 os.makedirs(path + "new_jan")
                 os.makedirs(path + "marked_up_jan")
+
             netx.write_gpickle(self.janGraph,path + "network")  
             handle = open(path + "lists.dat", 'w')  
             json.dump(self.janCategoryList,handle)
@@ -187,9 +188,10 @@ class network (threading.Thread):
                     fields = line.split("||")
                     self.janDict[fields[0]] = json.loads(fields[1].strip())
             print(path)
+
             if self.startFlag == False:
                 self.begin()
-            
+
         except:
             print("error reading network datafile or file missing")
             traceback.print_exc()
@@ -280,7 +282,6 @@ class network (threading.Thread):
         return networkBases
         
     def run(self):
-        #self.loadFromFile("Default")
         path = self.currentBase;
         print("JSON search thread started")
         while self.loadingFlag:

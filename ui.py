@@ -148,6 +148,7 @@ class UI:
 
         self.display_load_janbase_clicked()
 
+
     def populate_selection_box(self):
         self.cbox = self.builder.get_object("janbase_selection_box")
         self.model = self.cbox.get_model()
@@ -404,6 +405,7 @@ class UI:
         self.builder.get_object("text_box1").hide()
         self.builder.get_object("combo_box_action_label").set_label("Delete Janbase")
         self.builder.get_object("janbase_selection_box").hide()        
+
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("delete")
         action_button.connect("clicked",self.delete_janbase,None)
@@ -427,6 +429,7 @@ class UI:
         self.kad.load_janbase(modl[indx][0])
         self.builder.get_object("display_load_janbase").set_label(modl[indx][0])
         self.builder.get_object("janbase_reusable_dialog").hide()
+
 
     def settings_cancel_button_clicked(self, *args):
         self.settings_dialog.hide()
