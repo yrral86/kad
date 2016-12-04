@@ -317,10 +317,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="janbase_selection_box">
+              <object class="GtkButton" id="display_load_janbase">
+                <property name="label" translatable="yes">Janbase Name</property>
+                <property name="width_request">40</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <signal name="changed" handler="janbase_selection_box_changed" swapped="no"/>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="display_load_janbase_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -795,7 +798,15 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkComboBox" id="janbase_selection_box">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <signal name="changed" handler="janbase_selection_box_changed" swapped="no"/>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
             </child>
           </object>
           <packing>
