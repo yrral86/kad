@@ -139,9 +139,9 @@ class network (threading.Thread):
             path=self.currentBase
             if not os.path.exists(path):
                 os.makedirs(path)
-            if not os.path.exists(path+"new_jans"):
-                os.makedirs(path + "new_jans")
-                os.makedirs(path + "marked_up_jans")
+            if not os.path.exists(path+"new_jan"):
+                os.makedirs(path + "new_jan")
+                os.makedirs(path + "marked_up_jan")
             netx.write_gpickle(self.janGraph,path + "network")  
             handle = open(path + "lists.dat", 'w')  
             json.dump(self.janCategoryList,handle)
