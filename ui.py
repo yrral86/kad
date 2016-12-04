@@ -349,9 +349,10 @@ class UI:
     def create_janbase(self, *args):
         if self.builder.get_object("text_box1").get_text() != "":
             self.kad.create_janbase(self.builder.get_object("text_box1").get_text())
-            self.builder.get_object("janbase_reusable_dialog").hide()
             self.populate_selection_box()
-
+            self.builder.get_object("display_load_janbase").set_label(self.builder.get_object("text_box1").get_text())
+            self.builder.get_object("janbase_reusable_dialog").hide()
+    
     def create_janbase_clicked(self,*args):
         #create janbase
         self.builder.get_object("janbase_reusable_dialog").show()
@@ -359,6 +360,8 @@ class UI:
         self.builder.get_object("combo_box2_label").hide()
         self.builder.get_object("combo_box1_janbase").hide()
         self.builder.get_object("combo_box2_janbase").hide()
+        self.builder.get_object("text_box1_label").show()
+        self.builder.get_object("text_box1").show()
         self.builder.get_object("text_box1_label").set_label("Enter new Janbase name")
         self.builder.get_object("text_box1").set_text("")
         self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
@@ -463,4 +466,4 @@ class UI:
         self.builder.get_object("janbase_selection_box").show()
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("load")
-        action_button.connect("clicked",self.load_janbase,None)
+        action_button.connect("clicked",self.janbase_selection_box_changed,None)
