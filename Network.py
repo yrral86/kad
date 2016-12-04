@@ -203,13 +203,19 @@ class network (threading.Thread):
             print(eachFile + " processed & deleted")
             
     def mergeNetworks(self,base1,base2):  #merge 2 into 1
-        path2 = os.path.dirname(os.path.abspath(__file__)) + base2 + "/";        
+        path2 = os.path.dirname(os.path.abspath(__file__)) +"/data/"+ base2 + "/";        
         self.loadNetworkBase(base1)
         
         janGraph2 = netx.read_gpickle(path2+"network")
-        janDict2 = []        
+        janDict2 = {}    
+        janCategoryList2 = []
+        janIDs2 = []
+        janKeywordList2 = []
+        janMetaList2 = []
+        
         with open(path2+"lists.dat", 'r') as handle:
             janCategoryList2 = handle.readline().strip()
+            print(janCategoryList2)
             janCategoryList2 = janCategoryList2[1:-1].replace("\"","").replace(',',"").split()
             janIDs2 = handle.readline().strip()
             janIDs2 = janIDs2[1:-1].replace("\"","").replace(',',"").split()
@@ -219,19 +225,20 @@ class network (threading.Thread):
             janMetaList2 =janMetaList2[1:-1].replace("\"","").replace(',',"").split()
             handle.close()
         with open(path2 + "jans", 'r') as janHandle:
-            for line in janHandle:                                 
+            for line in janHandle:    
+                print(line)                             
                 fields = line.split("||")
-                self.janDict2[fields[0]] = json.loads(fields[1].strip())        
+                janDict2[fields[0]] = json.loads(fields[1].strip())        
         
         self.janGraph = netx.compose(self.janGraph,janGraph2)
         for cata in janCategoryList2:
             if cata not in self.janCategoryList:
-                self.janCategoryList2.append(cata)
+                self.janCategoryList.append(cata)
                 
         for id in janIDs2:
             if id not in self.janIDs:
                 self.janIDs.append(id)
-                
+
         for kw in janKeywordList2:
             if kw not in self.janKeywordList:
                 self.janKeywordList.append(kw)

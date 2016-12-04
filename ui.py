@@ -124,14 +124,6 @@ class UI:
         self.jan_scroll_window.hide()
         self.open_uri("http://scholar.google.com/")
 
-        self.cbox = self.builder.get_object("janbase_selection_box")
-        self.model = Gtk.ListStore(str)
-        self.cbox.set_model(self.model)
-        self.cell = Gtk.CellRendererText()
-        self.cbox.pack_start(self.cell, False)
-        self.cbox.add_attribute(self.cell, 'text',0)
-        self.populate_selection_box()
-
         self.cbox_janbase1 = self.builder.get_object("combo_box1_janbase")
         self.model1 = Gtk.ListStore(str)
         self.cbox_janbase1.set_model(self.model1)
@@ -147,17 +139,6 @@ class UI:
         self.cbox_janbase2.add_attribute(self.cell2, 'text',0)
 
         self.display_load_janbase_clicked()
-
-
-    def populate_selection_box(self):
-        self.cbox = self.builder.get_object("janbase_selection_box")
-        self.model = self.cbox.get_model()
-        self.model.clear()
-
-        for janbases in self.kad.get_janbases():
-            self.model.append([janbases])
-            #print(janbases)
-
 
     def activate_pdf_view(self):
         self.browser_window.hide()
@@ -309,7 +290,6 @@ class UI:
             self.knowledge_location_entry_activate(False)
 
     def merge_janbase_clicked(self, *args):
-        self.builder.get_object("janbase_selection_box").hide()        
         self.builder.get_object("janbase_reusable_dialog").show()
         self.builder.get_object("combo_box1_label").show()
         self.builder.get_object("combo_box2_label").show()
@@ -336,15 +316,17 @@ class UI:
         action_button.connect("clicked",self.merge_janbase,None)
 
     def merge_janbase(self,*args):
-        janbase_merge_target = self.builder.get_object("combo_box1_janbase").get_active()
-        janbase_to_merge = self.builder.get_object("combo_box2_janbase").get_active()
-        janbase_model_target = self.builder.get_object("combo_box1_janbase").get_model()
-        janbase_model_tomerge = self.builder.get_object("combo_box2_janbase").get_model()
-        if janbase_merge_target == janbase_to_merge or janbase_merge_target == "" or janbase_to_merge =="":
+        janbase_to_merge = self.builder.get_object("combo_box1_janbase").get_active()
+        janbase_merge_target = self.builder.get_object("combo_box2_janbase").get_active()
+        janbase_model_tomerge = self.builder.get_object("combo_box1_janbase").get_model()
+        janbase_model_target = self.builder.get_object("combo_box2_janbase").get_model()
+        if janbase_merge_target == janbase_to_merge or janbase_merge_target == -1 or janbase_to_merge ==-1:
             pass #error message
         else:
-            self.kad.merge_janbases(janbase_model_target[janbase_merge_target],janbase_model_tomerge[janbase_to_merge])
+            self.kad.merge_janbases(janbase_model_target[janbase_merge_target][0],janbase_model_tomerge[janbase_to_merge][0])
+            self.builder.get_object("display_load_janbase").set_label(janbase_model_target[janbase_merge_target][0])            
             self.builder.get_object("janbase_reusable_dialog").hide()
+            
 
     def create_janbase(self, *args):
         if self.builder.get_object("text_box1").get_text() != "":
@@ -365,17 +347,16 @@ class UI:
         self.builder.get_object("text_box1_label").set_label("Enter new Janbase name")
         self.builder.get_object("text_box1").set_text("")
         self.builder.get_object("combo_box_action_label").set_label("Create New Janbase")
-        self.builder.get_object("janbase_selection_box").hide()        
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("create")
         action_button.connect("clicked",self.create_janbase,None)
-
+        
     def load_janbase(self,*args):
+        #print("load janbase")  this module being called multiple times by unknown
         model = self.builder.get_object("combo_box1_janbase").get_model()
         index = self.builder.get_object("combo_box1_janbase").get_active()
-        self.kad.load_janbase(model[index[0]])
+        self.kad.load_janbase(model[index][0])
         self.builder.get_object("display_load_janbase").set_label(model[index][0])
-        print(model[index][0])
         self.builder.get_object("janbase_reusable_dialog").hide() 
            
     def load_janbase_clicked(self, *args):
@@ -387,16 +368,16 @@ class UI:
         self.builder.get_object("text_box1_label").hide()
         self.builder.get_object("text_box1").hide()
         self.builder.get_object("combo_box1_label").set_label("Select Janbase")
-        self.builder.get_object("combo_box_action_label").set_label("Load Janbase")
-        self.builder.get_object("janbase_selection_box").hide()        
+        self.builder.get_object("combo_box_action_label").set_label("Load Janbase")     
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("load")
         action_button.connect("clicked",self.load_janbase,None)
+      
         janbase_list = self.builder.get_object("combo_box1_janbase").get_model()
         janbase_list.clear()
         for janbases in self.kad.get_janbases():
             janbase_list.append([janbases])
-
+  
     def delete_janbase_clicked(self, *args):
         self.builder.get_object("janbase_reusable_dialog").show()
         self.builder.get_object("combo_box1_label").show()
@@ -407,7 +388,6 @@ class UI:
         self.builder.get_object("text_box1_label").hide()
         self.builder.get_object("text_box1").hide()
         self.builder.get_object("combo_box_action_label").set_label("Delete Janbase")
-        self.builder.get_object("janbase_selection_box").hide()        
 
         action_button = self.builder.get_object("janbase_action_button")
         action_button.set_label("delete")
@@ -425,14 +405,6 @@ class UI:
             index = self.builder.get_object("combo_box1_janbase").get_active()
             self.kad.delete_janbase(model[index][0])
             self.builder.get_object("janbase_reusable_dialog").hide()
-
-    def janbase_selection_box_changed(self, *args):
-        indx = self.builder.get_object("janbase_selection_box").get_active()
-        modl = self.builder.get_object("janbase_selection_box").get_model()
-        self.kad.load_janbase(modl[indx][0])
-        self.builder.get_object("display_load_janbase").set_label(modl[indx][0])
-        self.builder.get_object("janbase_reusable_dialog").hide()
-
 
     def settings_cancel_button_clicked(self, *args):
         self.settings_dialog.hide()
@@ -455,15 +427,5 @@ class UI:
         self.builder.get_object("janbase_reusable_dialog").hide()
         
     def display_load_janbase_clicked(self, *args):
-        self.builder.get_object("janbase_reusable_dialog").show()
-        self.builder.get_object("combo_box1_label").hide()
-        self.builder.get_object("combo_box2_label").hide()
-        self.builder.get_object("combo_box1_janbase").hide()
-        self.builder.get_object("combo_box2_janbase").hide()
-        self.builder.get_object("text_box1_label").hide()
-        self.builder.get_object("text_box1").hide()
-        self.builder.get_object("combo_box_action_label").set_label("Load Janbase")
-        self.builder.get_object("janbase_selection_box").show()
-        action_button = self.builder.get_object("janbase_action_button")
-        action_button.set_label("load")
-        action_button.connect("clicked",self.janbase_selection_box_changed,None)
+        self.load_janbase_clicked()
+
