@@ -187,6 +187,9 @@ class network (threading.Thread):
                     fields = line.split("||")
                     self.janDict[fields[0]] = json.loads(fields[1].strip())
             print(path)
+            if self.startFlag == False:
+                self.begin()
+            
         except:
             print("error reading network datafile or file missing")
             traceback.print_exc()
@@ -244,7 +247,8 @@ class network (threading.Thread):
     
     
     def loadNetworkBase(self,networkBase):
-        self.saveToFile()            
+        if self.startFlag == True:        
+            self.saveToFile()            
         self.G=netx.Graph()
         self.loadFromFile(networkBase)
         
@@ -276,7 +280,7 @@ class network (threading.Thread):
         return networkBases
         
     def run(self):
-        self.loadFromFile("Default")
+        #self.loadFromFile("Default")
         path = self.currentBase;
         print("JSON search thread started")
         while self.loadingFlag:

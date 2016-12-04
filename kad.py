@@ -33,7 +33,7 @@ class KAD:
         # magic to make control-c work
         # http://stackoverflow.com/questions/16410852/keyboard-interrupt-with-with-python-gtk
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-        self.G.begin()
+        #self.G.begin()
 
     def current_uri(self):
         return F.uri_from_path(self.filename)
