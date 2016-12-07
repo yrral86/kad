@@ -57,6 +57,13 @@ class network (threading.Thread):
                             self.janGraph.add_edge("Meta:" + dictList["value"],"MetaField:" + dictList[meta])
                         
                         self.janGraph.add_edge(janjson["uuid"], "Meta:" + dictList["value"])
+
+    def getAllJans(self):
+        JanList = list()
+        for jsonInDict in self.janDict.values():
+            JanList.append(jsonInDict)
+        return JanList
+
                            
     def getJansFromKeyword(self, keyword):
         try:

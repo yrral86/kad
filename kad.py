@@ -96,6 +96,7 @@ class KAD:
         self.G.createNetworkBase(base_name)
     def load_janbase(self, base_name):
         self.G.loadNetworkBase(base_name)
+        self.ui.V.janBaseReady();
 
     def merge_janbases(self, base1, base2):
         self.G.mergeNetworks(base1,base2)

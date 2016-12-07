@@ -38,14 +38,14 @@
    
   </style>
   
-<body onresize="changeWindowSize()">
+<body onresize="changeWindowSize()" onload="readyVisual()">
   <table>
-    <tr>
+    <!-- <tr>
       <td style="height:40px">
         <input style="margin-top:5px" type="text" id="target">
         <button style="margin-top:5px" type="button" onClick="sendTarget()">Submit!</button>
       </td>
-    </tr>
+    </tr> -->
     <tr>
       <td >
         <div style="text-align:left">
@@ -113,16 +113,20 @@
     call_python("getJansFromKeyword", keyword);
   }
 
+  function readyVisual(){
+    call_python("websiteReady", "");
+  }
+
   function getJansFromKeyword(jan){
 
     JAN_array = JSON.parse(jan);
-    getCategory(["time","author","type"]);
+    call_python("getCategory", "");
+    // getCategory(["time","author","type"]);
 
 
   }
 
   function getCategory(category){
-
     filter_label.style.visibility = "visible"
 
     while(filter.firstChild){
@@ -247,7 +251,9 @@
 
     var pie = d3.pie()
       .sort(null)
-      .value(function(d){return d.value;});
+      .value(function(d){
+        console.log(d);
+        return d.value;});
 
     var wait;
 
@@ -447,17 +453,19 @@
           circleAttr.push({"uuid": d.uuid, "c_length": 0, "c_angle": 0,"c_color": "#FFF", "visible": 0});
         }
 
-        for(var j = 0; j < d.keywords.length; j++ ){
-          var isInArray = false;
-          for(var k = 0; k < keyword_array.length; k++){
-            if(d.keywords[j] == keyword_array[k].name){
-              isInArray = true;
-              keyword_array[k].uuid.push(d.uuid);
-              break;
+        if(d.keywords!=null){
+          for(var j = 0; j < d.keywords.length; j++ ){
+            var isInArray = false;
+            for(var k = 0; k < keyword_array.length; k++){
+              if(d.keywords[j] == keyword_array[k].name){
+                isInArray = true;
+                keyword_array[k].uuid.push(d.uuid);
+                break;
+              }
             }
-          }
-          if(!isInArray){
-            keyword_array.push({"name":d.keywords[j], "uuid":[d.uuid]});
+            if(!isInArray){
+              keyword_array.push({"name":d.keywords[j], "uuid":[d.uuid]});
+            }
           }
         }
         

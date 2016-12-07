@@ -12,20 +12,37 @@ class V:
     authorList = [];
     timeList = [];
     typeList = [];
+    website_flag = False;
+    Janbase_flag = False;
+
     def __init__ (self, ui):
         self.ui = ui
         self.kad = ui.kad
+        self.G = self.kad.G
 
     def visualizer_request(self, request, *args):
         request.finish(Gio.MemoryInputStream(), 0, "text/html")
         eval("self." + request.get_path())
 
-    def getJansFromKeyword(self, keyword):
+    def websiteReady(self, msg):
+        self.website_flag = True
+        if(self.Janbase_flag):
+            self.getJansFromKeyword()
+        
+
+    def janBaseReady(self):
+        self.Janbase_flag = True
+        if(self.website_flag):
+            self.getJansFromKeyword()
+        
+
+    def getJansFromKeyword(self):
         json_author = [];
         json_time = [];
         json_type = [];
 
-        json_context = F.slurp(F.uri_from_path("hardcode/" + keyword + ".json"))
+        # json_context = F.slurp(F.uri_from_path("hardcode/" + keyword + ".json"))
+        json_context = json.dumps(self.G.getAllJans())
         self.jsonList = json.loads(json_context)
         self.kad.js_function("getJansFromKeyword",json_context)
 
@@ -42,14 +59,46 @@ class V:
         self.timeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_time))]
         self.typeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_type))]
 
+        # print("start test")
+        # y=self.G.getKeywordCategories()
+        # print(y)
+
+        # categoryList = self.G.getCategories()  #returns a list of strings
+        # print(categoryList)
+        # for x in categoryList:      #this loop runs through all categories and prints all IDs associated
+        #     y = self.G.getIdsFromCategory(x)     #returns a list of strings
+        #     for z in y:
+        #         print("List for " + x + ": " + z)
+        # print("\n")
+        # # print(self.G.)
+        # print("end of test")
+
+    # def start_visualize(self):
+
+    def getCategory(self,janbase):
+        category = self.G.getCategories()
+        #category would not show link, uuid and metadata
+        if('link' in category):
+            category.remove('link')
+        if('uuid' in category):
+            category.remove('uuid')
+        if('metadata' in category):
+            category.remove('metadata')
+        self.kad.js_function("getCategory", category)
+
+
     def getIdsFromCategory(self,category):
 
+        # print("ID:",self.G.getIdsFromCategory(category))
+        # showList = self.G.getIdsFromCategory(category)
         if category == "author":
             showList = self.authorList
         elif category == "time":
             showList = self.timeList
         elif category == "type":
             showList = self.typeList
+        else:
+            showList = ""
         self.kad.js_function("getIdsFromCategory", json.dumps(showList))
 
     def showJansUrl(self, jan_url):
