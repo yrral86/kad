@@ -252,7 +252,6 @@
     var pie = d3.pie()
       .sort(null)
       .value(function(d){
-        console.log(d);
         return d.value;});
 
     var wait;
@@ -543,7 +542,16 @@
       .attr("dominant-baseline", "middle")
       .attr("alignment-baseline", "middle")
       .text(function(d,i){
-        return d.uuid;
+        console.log(d)
+        if(d.title){
+          return d.title;
+        }else{
+          if(d.uuid.length > 6){
+            return d.uuid.substring(0,5);
+          }else{
+            return d.uuid;
+          }
+        }
       })
       .attr("x", 0)
       .attr("y", 0)
@@ -569,7 +577,11 @@
 
       bubbles.append("title")
       .text(function(d){
-        return d.uuid
+        if(d.title){
+          return d.title;
+        }else{
+            return d.uuid;
+        }
       })
       .style("visibility", function(d,i){
         for(var j= 0 ; j < circleAttr.length; j++){

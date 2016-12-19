@@ -44,6 +44,33 @@ class V:
         # json_context = F.slurp(F.uri_from_path("hardcode/" + keyword + ".json"))
         json_context = json.dumps(self.G.getAllJans())
         self.jsonList = json.loads(json_context)
+
+        #initiatial title dictionary and keyword_list to avoid they are not in the metadata
+
+
+        #make json as the format of [{"uuid":"", "type":"","time":"","link":"","keywords":["",""],"author":"","metadata",""}]
+        for d in self.jsonList:
+            title_dic = ""
+            time_dic = ""
+            keyword_list = []
+            for key,value in d.iteritems():
+                if key == "metadata":
+                    for md in value:
+                        for key_m, value_m in md.iteritems():
+                            if value_m == "page title":
+                                title_dic = md["value"]
+                            if value_m == "keyword":
+                                keyword_list.append(md["value"])
+                            if value_m == "retrieval time":
+                                time_dic = md["value"][0:4]
+            d["keywords"]=keyword_list #append list of keywords to jan from metadata
+            d["title"]= title_dic #append jan title to jan from metadata
+            d["time"] = time_dic
+
+        # print(self.jsonList)
+        json_context = json.dumps(self.jsonList)
+        # print(json.loads(json_context))
+
         self.kad.js_function("getJansFromKeyword",json_context)
 
         #for i in range(0,len(self.jsonList)):
@@ -59,31 +86,15 @@ class V:
         self.timeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_time))]
         self.typeList = [dict(name = key, value= len(list(group))) for key,group in groupby(sorted(json_type))]
 
-        # print("start test")
-        # y=self.G.getKeywordCategories()
-        # print(y)
-
-        # categoryList = self.G.getCategories()  #returns a list of strings
-        # print(categoryList)
-        # for x in categoryList:      #this loop runs through all categories and prints all IDs associated
-        #     y = self.G.getIdsFromCategory(x)     #returns a list of strings
-        #     for z in y:
-        #         print("List for " + x + ": " + z)
-        # print("\n")
-        # # print(self.G.)
-        # print("end of test")
-
-    # def start_visualize(self):
-
     def getCategory(self,janbase):
-        category = self.G.getCategories()
+        category = ["type","time"]
         #category would not show link, uuid and metadata
-        if('link' in category):
-            category.remove('link')
-        if('uuid' in category):
-            category.remove('uuid')
-        if('metadata' in category):
-            category.remove('metadata')
+        # if('link' in category):
+        #     category.remove('link')
+        # if('uuid' in category):
+        #     category.remove('uuid')
+        # if('metadata' in category):
+        #     category.remove('metadata')
         self.kad.js_function("getCategory", category)
 
 

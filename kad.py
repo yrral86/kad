@@ -22,8 +22,8 @@ class KAD:
         self.new_watcher = DirWatcher("jan", JAN.NewDir, MarkUpHandler)
         self.new_watcher.start()
 
-        self.sync_mail = SyncMail("pop.gmail.com", "houshifu1234@gmail.com", "hsf12345")
-        self.sync_mail.start()
+        # self.sync_mail = SyncMail("pop.gmail.com", "houshifu1234@gmail.com", "hsf12345")
+        # self.sync_mail.start()
 
         self.filename = ""
 
